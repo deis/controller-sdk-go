@@ -1,0 +1,25 @@
+# Deis client requirements
+docopt==0.6.1
+python-dateutil==2.2
+#PyYAML==3.10
+requests==2.2.1
+
+# PyInstaller builds client binaries
+PyInstaller==2.1
+
+# Deis documentation requirements
+Sphinx>=1.2.2
+smartypants>=1.8.3
+sphinxcontrib-httpdomain>=1.2.0
+
+# Run "make coverage" for the % of code exercised during tests
+coverage>=3.7.1
+
+# Generates template documentation in the Django admin
+docutils>=0.11
+
+# Run "make flake8" to check python syntax and style
+flake8>=2.1.0
+
+# Python expect is used to automate client-driven tests
+pexpect>=3.1
