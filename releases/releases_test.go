@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	client "github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
 )
 
@@ -59,7 +59,7 @@ const rollbackerExpected string = ``
 type fakeHTTPServer struct{}
 
 func (fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	res.Header().Add("DEIS_API_VERSION", client.APIVersion)
+	res.Header().Add("DEIS_API_VERSION", deis.APIVersion)
 
 	if req.URL.Path == "/v2/apps/example-go/releases/" && req.Method == "GET" {
 		res.Write([]byte(releasesFixture))
@@ -139,12 +139,12 @@ func TestReleasesList(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	actual, _, err := List(client, "example-go", 100)
+	actual, _, err := List(deis, "example-go", 100)
 
 	if err != nil {
 		t.Fatal(err)
@@ -174,12 +174,12 @@ func TestReleasesGet(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	actual, err := Get(client, "example-go", 1)
+	actual, err := Get(deis, "example-go", 1)
 
 	if err != nil {
 		t.Fatal(err)
@@ -199,12 +199,12 @@ func TestRollback(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	actual, err := Rollback(client, "example-go", 2)
+	actual, err := Rollback(deis, "example-go", 2)
 
 	if err != nil {
 		t.Fatal(err)
@@ -224,12 +224,12 @@ func TestRollbacker(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	actual, err := Rollback(client, "rollbacker", -1)
+	actual, err := Rollback(deis, "rollbacker", -1)
 
 	if err != nil {
 		t.Fatal(err)

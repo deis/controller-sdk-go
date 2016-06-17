@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	client "github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
 )
 
@@ -59,7 +59,7 @@ const configUnsetExpected string = `{"values":{"FOO":null,"TEST":null},"memory":
 type fakeHTTPServer struct{}
 
 func (f *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	res.Header().Add("DEIS_API_VERSION", client.APIVersion)
+	res.Header().Add("DEIS_API_VERSION", deis.APIVersion)
 
 	if req.URL.Path == "/v2/apps/example-go/config/" && req.Method == "POST" {
 		body, err := ioutil.ReadAll(req.Body)
@@ -120,7 +120,7 @@ func TestConfigSet(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -168,7 +168,7 @@ func TestConfigSet(t *testing.T) {
 		},
 	}
 
-	actual, err := Set(client, "example-go", configVars)
+	actual, err := Set(deis, "example-go", configVars)
 
 	if err != nil {
 		t.Error(err)
@@ -186,7 +186,7 @@ func TestConfigUnset(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -223,7 +223,7 @@ func TestConfigUnset(t *testing.T) {
 		},
 	}
 
-	actual, err := Set(client, "unset-test", configVars)
+	actual, err := Set(deis, "unset-test", configVars)
 
 	if err != nil {
 		t.Error(err)
@@ -241,7 +241,7 @@ func TestConfigList(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -270,7 +270,7 @@ func TestConfigList(t *testing.T) {
 		UUID:    "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
 	}
 
-	actual, err := List(client, "example-go")
+	actual, err := List(deis, "example-go")
 
 	if err != nil {
 		t.Error(err)

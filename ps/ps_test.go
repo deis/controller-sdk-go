@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	client "github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
 	"github.com/deis/controller-sdk-go/pkg/time"
 )
@@ -67,7 +67,7 @@ const scaleExpected string = `{"web":2}`
 type fakeHTTPServer struct{}
 
 func (fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	res.Header().Add("DEIS_API_VERSION", client.APIVersion)
+	res.Header().Add("DEIS_API_VERSION", deis.APIVersion)
 
 	if req.URL.Path == "/v2/apps/example-go/pods/" && req.Method == "GET" {
 		res.Write([]byte(processesFixture))
@@ -139,12 +139,12 @@ func TestProcessesList(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	actual, _, err := List(client, "example-go", 100)
+	actual, _, err := List(deis, "example-go", 100)
 
 	if err != nil {
 		t.Fatal(err)
@@ -225,13 +225,13 @@ func TestAppsRestart(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for _, test := range tests {
-		actual, err := Restart(client, "example-go", test.Type, test.Name)
+		actual, err := Restart(deis, "example-go", test.Type, test.Name)
 
 		if err != nil {
 			t.Error(err)
@@ -250,12 +250,12 @@ func TestScale(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if err = Scale(client, "example-go", map[string]int{"web": 2}); err != nil {
+	if err = Scale(deis, "example-go", map[string]int{"web": 2}); err != nil {
 		t.Fatal(err)
 	}
 }

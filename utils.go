@@ -1,4 +1,4 @@
-package client
+package deis
 
 func checkAPICompatibility(serverAPIVersion string) error {
 	if serverAPIVersion != APIVersion {

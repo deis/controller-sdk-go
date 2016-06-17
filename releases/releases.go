@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	client "github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
 )
 
 // List lists an app's releases.
-func List(c *client.Client, appID string, results int) ([]api.Release, int, error) {
+func List(c *deis.Client, appID string, results int) ([]api.Release, int, error) {
 	u := fmt.Sprintf("/v2/apps/%s/releases/", appID)
 
 	body, count, err := c.LimitedRequest(u, results)
@@ -27,7 +27,7 @@ func List(c *client.Client, appID string, results int) ([]api.Release, int, erro
 }
 
 // Get a release of an app.
-func Get(c *client.Client, appID string, version int) (api.Release, error) {
+func Get(c *deis.Client, appID string, version int) (api.Release, error) {
 	u := fmt.Sprintf("/v2/apps/%s/releases/v%d/", appID, version)
 
 	body, err := c.BasicRequest("GET", u, nil)
@@ -45,7 +45,7 @@ func Get(c *client.Client, appID string, version int) (api.Release, error) {
 }
 
 // Rollback rolls back an app to a previous release.
-func Rollback(c *client.Client, appID string, version int) (int, error) {
+func Rollback(c *deis.Client, appID string, version int) (int, error) {
 	u := fmt.Sprintf("/v2/apps/%s/releases/rollback/", appID)
 
 	req := api.ReleaseRollback{Version: version}

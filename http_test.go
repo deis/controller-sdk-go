@@ -1,4 +1,4 @@
-package client
+package deis
 
 import (
 	"fmt"
@@ -100,13 +100,13 @@ func TestCheckConnection(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	client, err := New(false, server.URL, "", "")
+	deis, err := New(false, server.URL, "", "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	client.UserAgent = "test"
+	deis.UserAgent = "test"
 
-	if err = client.CheckConnection(); err != nil {
+	if err = deis.CheckConnection(); err != nil {
 		t.Error(err)
 	}
 }
@@ -118,18 +118,18 @@ func TestAPIMistmatch(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	client, err := New(false, server.URL, "", "")
+	deis, err := New(false, server.URL, "", "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	client.UserAgent = "test"
+	deis.UserAgent = "test"
 
-	if err = client.CheckConnection(); err != ErrAPIMismatch {
+	if err = deis.CheckConnection(); err != ErrAPIMismatch {
 		t.Error("Expected ErrAPIMismatch error")
 	}
 
-	if client.ControllerAPIVersion != handler.Version {
-		t.Errorf("Expected %s, Got %s", handler.Version, client.ControllerAPIVersion)
+	if deis.ControllerAPIVersion != handler.Version {
+		t.Errorf("Expected %s, Got %s", handler.Version, deis.ControllerAPIVersion)
 	}
 }
 
@@ -140,13 +140,13 @@ func TestBasicRequest(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	client, err := New(false, server.URL, "abc", "")
+	deis, err := New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	client.UserAgent = "test"
+	deis.UserAgent = "test"
 
-	body, err := client.BasicRequest("POST", "/basic/", []byte("test"))
+	body, err := deis.BasicRequest("POST", "/basic/", []byte("test"))
 
 	if err != nil {
 		t.Fatal(err)
@@ -157,13 +157,13 @@ func TestBasicRequest(t *testing.T) {
 		t.Errorf("Expected %s, Got %s", expected, body)
 	}
 
-	if client.ControllerAPIVersion != handler.Version {
-		t.Errorf("Expected %s, Got %s", handler.Version, client.ControllerAPIVersion)
+	if deis.ControllerAPIVersion != handler.Version {
+		t.Errorf("Expected %s, Got %s", handler.Version, deis.ControllerAPIVersion)
 	}
 
 	// Make sure the request doesn't modify the URL
-	if client.ControllerURL.String() != server.URL {
-		t.Errorf("Expected %s, Got %s", server.URL, client.ControllerURL.String())
+	if deis.ControllerURL.String() != server.URL {
+		t.Errorf("Expected %s, Got %s", server.URL, deis.ControllerURL.String())
 	}
 }
 
@@ -263,16 +263,16 @@ func TestLimitedRequest(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	client, err := New(false, server.URL, "abc", "")
+	deis, err := New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	client.UserAgent = "test"
+	deis.UserAgent = "test"
 
 	expected := `[{"test":"foo"},{"test":"bar"}]`
 	expectedC := 4
 
-	actual, count, err := client.LimitedRequest("/limited/", 2)
+	actual, count, err := deis.LimitedRequest("/limited/", 2)
 
 	if err != nil {
 		t.Fatal(err)
@@ -286,12 +286,12 @@ func TestLimitedRequest(t *testing.T) {
 		t.Errorf("Expected %s, Got %s", expected, actual)
 	}
 
-	if client.ControllerAPIVersion != handler.Version {
-		t.Errorf("Expected %s, Got %s", handler.Version, client.ControllerAPIVersion)
+	if deis.ControllerAPIVersion != handler.Version {
+		t.Errorf("Expected %s, Got %s", handler.Version, deis.ControllerAPIVersion)
 	}
 
 	// Make sure the request doesn't modify the URL
-	if client.ControllerURL.String() != server.URL {
-		t.Errorf("Expected %s, Got %s", server.URL, client.ControllerURL.String())
+	if deis.ControllerURL.String() != server.URL {
+		t.Errorf("Expected %s, Got %s", server.URL, deis.ControllerURL.String())
 	}
 }

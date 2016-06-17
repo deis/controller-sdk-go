@@ -3,12 +3,12 @@ package auth
 import (
 	"encoding/json"
 
-	client "github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
 )
 
 // Register a new user with the controller.
-func Register(c *client.Client, username, password, email string) error {
+func Register(c *deis.Client, username, password, email string) error {
 	user := api.AuthRegisterRequest{Username: username, Password: password, Email: email}
 	body, err := json.Marshal(user)
 
@@ -21,7 +21,7 @@ func Register(c *client.Client, username, password, email string) error {
 }
 
 // Login to the controller and get a token
-func Login(c *client.Client, username, password string) (string, error) {
+func Login(c *deis.Client, username, password string) (string, error) {
 	user := api.AuthLoginRequest{Username: username, Password: password}
 	reqBody, err := json.Marshal(user)
 
@@ -44,7 +44,7 @@ func Login(c *client.Client, username, password string) (string, error) {
 }
 
 // Delete deletes a user.
-func Delete(c *client.Client, username string) error {
+func Delete(c *deis.Client, username string) error {
 	var body []byte
 	var err error
 
@@ -62,7 +62,7 @@ func Delete(c *client.Client, username string) error {
 }
 
 // Regenerate user's auth tokens.
-func Regenerate(c *client.Client, username string, all bool) (string, error) {
+func Regenerate(c *deis.Client, username string, all bool) (string, error) {
 	var reqBody []byte
 	var err error
 
@@ -95,7 +95,7 @@ func Regenerate(c *client.Client, username string, all bool) (string, error) {
 }
 
 // Passwd changes a user's password.
-func Passwd(c *client.Client, username, password, newPassword string) error {
+func Passwd(c *deis.Client, username, password, newPassword string) error {
 	req := api.AuthPasswdRequest{Password: password, NewPassword: newPassword}
 
 	if username != "" {

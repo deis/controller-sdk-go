@@ -3,12 +3,12 @@ package users
 import (
 	"encoding/json"
 
-	client "github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
 )
 
 // List users registered with the controller.
-func List(c *client.Client, results int) ([]api.User, int, error) {
+func List(c *deis.Client, results int) ([]api.User, int, error) {
 	body, count, err := c.LimitedRequest("/v2/users/", results)
 
 	if err != nil {

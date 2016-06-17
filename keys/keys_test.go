@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	client "github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
 )
 
@@ -44,7 +44,7 @@ const keyCreateExpected string = `{"id":"test@example.com","public":"ssh-rsa abc
 type fakeHTTPServer struct{}
 
 func (fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	res.Header().Add("DEIS_API_VERSION", client.APIVersion)
+	res.Header().Add("DEIS_API_VERSION", deis.APIVersion)
 
 	if req.URL.Path == "/v2/keys/" && req.Method == "GET" {
 		res.Write([]byte(keysListFixture))
@@ -101,12 +101,12 @@ func TestKeysList(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	actual, _, err := List(client, 100)
+	actual, _, err := List(deis, 100)
 
 	if err != nil {
 		t.Fatal(err)
@@ -133,12 +133,12 @@ func TestKeyCreate(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	actual, err := New(client, "test@example.com", "ssh-rsa abc test@example.com")
+	actual, err := New(deis, "test@example.com", "ssh-rsa abc test@example.com")
 
 	if err != nil {
 		t.Fatal(err)
@@ -156,12 +156,12 @@ func TestKeysDestroy(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if err = Delete(client, "test@example.com"); err != nil {
+	if err = Delete(deis, "test@example.com"); err != nil {
 		t.Fatal(err)
 	}
 }

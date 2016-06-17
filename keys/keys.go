@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	client "github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
 )
 
 // List keys on a controller.
-func List(c *client.Client, results int) ([]api.Key, int, error) {
+func List(c *deis.Client, results int) ([]api.Key, int, error) {
 	body, count, err := c.LimitedRequest("/v2/keys/", results)
 
 	if err != nil {
@@ -25,7 +25,7 @@ func List(c *client.Client, results int) ([]api.Key, int, error) {
 }
 
 // New creates a new key.
-func New(c *client.Client, id string, pubKey string) (api.Key, error) {
+func New(c *deis.Client, id string, pubKey string) (api.Key, error) {
 	req := api.KeyCreateRequest{ID: id, Public: pubKey}
 	body, err := json.Marshal(req)
 
@@ -44,7 +44,7 @@ func New(c *client.Client, id string, pubKey string) (api.Key, error) {
 }
 
 // Delete a key.
-func Delete(c *client.Client, keyID string) error {
+func Delete(c *deis.Client, keyID string) error {
 	u := fmt.Sprintf("/v2/keys/%s", keyID)
 
 	_, err := c.BasicRequest("DELETE", u, nil)

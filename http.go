@@ -1,4 +1,4 @@
-package client
+package deis
 
 import (
 	"bytes"
@@ -158,7 +158,7 @@ func checkForErrors(res *http.Response, body string) error {
 func (c *Client) CheckConnection() error {
 	errorMessage := `%s does not appear to be a valid Deis controller.
 Make sure that the Controller URI is correct, the server is running and
-your client version is correct.`
+your deis version is correct.`
 
 	// Make a request to /v2/ and expect a 401 respone
 	req, err := http.NewRequest("GET", c.ControllerURL.String()+"/v2/", bytes.NewBuffer(nil))

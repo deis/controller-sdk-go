@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	client "github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
 )
 
 // List an app's processes.
-func List(c *client.Client, appID string, results int) ([]api.Pods, int, error) {
+func List(c *deis.Client, appID string, results int) ([]api.Pods, int, error) {
 	u := fmt.Sprintf("/v2/apps/%s/pods/", appID)
 	body, count, err := c.LimitedRequest(u, results)
 	if err != nil {
@@ -25,7 +25,7 @@ func List(c *client.Client, appID string, results int) ([]api.Pods, int, error) 
 }
 
 // Scale an app's processes.
-func Scale(c *client.Client, appID string, targets map[string]int) error {
+func Scale(c *deis.Client, appID string, targets map[string]int) error {
 	u := fmt.Sprintf("/v2/apps/%s/scale/", appID)
 
 	body, err := json.Marshal(targets)
@@ -39,7 +39,7 @@ func Scale(c *client.Client, appID string, targets map[string]int) error {
 }
 
 // Restart an app's processes.
-func Restart(c *client.Client, appID string, procType string, name string) ([]api.Pods, error) {
+func Restart(c *deis.Client, appID string, procType string, name string) ([]api.Pods, error) {
 	u := fmt.Sprintf("/v2/apps/%s/pods/", appID)
 
 	if procType == "" {

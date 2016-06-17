@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	client "github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
 )
 
@@ -54,7 +54,7 @@ const buildExpected string = `{"image":"deis/example-go","procfile":{"web":"exam
 type fakeHTTPServer struct{}
 
 func (fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	res.Header().Add("DEIS_API_VERSION", client.APIVersion)
+	res.Header().Add("DEIS_API_VERSION", deis.APIVersion)
 
 	if req.URL.Path == "/v2/apps/example-go/builds/" && req.Method == "GET" {
 		res.Write([]byte(buildsFixture))
@@ -110,12 +110,12 @@ func TestBuildsList(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	actual, _, err := List(client, "example-go", 100)
+	actual, _, err := List(deis, "example-go", 100)
 
 	if err != nil {
 		t.Fatal(err)
@@ -145,7 +145,7 @@ func TestBuildCreate(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -154,7 +154,7 @@ func TestBuildCreate(t *testing.T) {
 		"web": "example-go",
 	}
 
-	actual, err := New(client, "example-go", "deis/example-go", procfile)
+	actual, err := New(deis, "example-go", "deis/example-go", procfile)
 
 	if err != nil {
 		t.Fatal(err)

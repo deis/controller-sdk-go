@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	client "github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
 )
 
 // List lists an app's builds.
-func List(c *client.Client, appID string, results int) ([]api.Build, int, error) {
+func List(c *deis.Client, appID string, results int) ([]api.Build, int, error) {
 	u := fmt.Sprintf("/v2/apps/%s/builds/", appID)
 	body, count, err := c.LimitedRequest(u, results)
 
@@ -26,7 +26,7 @@ func List(c *client.Client, appID string, results int) ([]api.Build, int, error)
 }
 
 // New creates a build for an app.
-func New(c *client.Client, appID string, image string,
+func New(c *deis.Client, appID string, image string,
 	procfile map[string]string) (api.Build, error) {
 
 	u := fmt.Sprintf("/v2/apps/%s/builds/", appID)

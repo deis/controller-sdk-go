@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	client "github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
 )
 
@@ -21,7 +21,7 @@ var ErrNoLogs = errors.New(
 3) Making sure that the container logs were mounted properly into the fluentd pod: kubectl exec <fluentd pod> --namespace=deis ls /var/log/containers`)
 
 // List lists apps on a Deis controller.
-func List(c *client.Client, results int) ([]api.App, int, error) {
+func List(c *deis.Client, results int) ([]api.App, int, error) {
 	body, count, err := c.LimitedRequest("/v2/apps/", results)
 
 	if err != nil {
@@ -43,7 +43,7 @@ func List(c *client.Client, results int) ([]api.App, int, error) {
 }
 
 // New creates a new app.
-func New(c *client.Client, id string) (api.App, error) {
+func New(c *deis.Client, id string) (api.App, error) {
 	body := []byte{}
 
 	var err error
@@ -74,7 +74,7 @@ func New(c *client.Client, id string) (api.App, error) {
 }
 
 // Get app details from a Deis controller.
-func Get(c *client.Client, appID string) (api.App, error) {
+func Get(c *deis.Client, appID string) (api.App, error) {
 	u := fmt.Sprintf("/v2/apps/%s/", appID)
 
 	body, err := c.BasicRequest("GET", u, nil)
@@ -96,7 +96,7 @@ func Get(c *client.Client, appID string) (api.App, error) {
 }
 
 // Logs retrieves logs from an app.
-func Logs(c *client.Client, appID string, lines int) (string, error) {
+func Logs(c *deis.Client, appID string, lines int) (string, error) {
 	u := fmt.Sprintf("/v2/apps/%s/logs", appID)
 
 	if lines > 0 {
@@ -115,7 +115,7 @@ func Logs(c *client.Client, appID string, lines int) (string, error) {
 }
 
 // Run one time command in an app.
-func Run(c *client.Client, appID string, command string) (api.AppRunResponse, error) {
+func Run(c *deis.Client, appID string, command string) (api.AppRunResponse, error) {
 	req := api.AppRunRequest{Command: command}
 	body, err := json.Marshal(req)
 
@@ -141,7 +141,7 @@ func Run(c *client.Client, appID string, command string) (api.AppRunResponse, er
 }
 
 // Delete an app.
-func Delete(c *client.Client, appID string) error {
+func Delete(c *deis.Client, appID string) error {
 	u := fmt.Sprintf("/v2/apps/%s/", appID)
 
 	_, err := c.BasicRequest("DELETE", u, nil)
@@ -149,7 +149,7 @@ func Delete(c *client.Client, appID string) error {
 }
 
 // Transfer an app to another user.
-func Transfer(c *client.Client, appID string, username string) error {
+func Transfer(c *deis.Client, appID string, username string) error {
 	u := fmt.Sprintf("/v2/apps/%s/", appID)
 
 	req := api.AppUpdateRequest{Owner: username}

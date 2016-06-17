@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	client "github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
 )
 
 // List certs registered with the controller.
-func List(c *client.Client, results int) ([]api.Cert, int, error) {
+func List(c *deis.Client, results int) ([]api.Cert, int, error) {
 	body, count, err := c.LimitedRequest("/v2/certs/", results)
 
 	if err != nil {
@@ -25,7 +25,7 @@ func List(c *client.Client, results int) ([]api.Cert, int, error) {
 }
 
 // New creates a cert.
-func New(c *client.Client, cert string, key string, name string) (api.Cert, error) {
+func New(c *deis.Client, cert string, key string, name string) (api.Cert, error) {
 	req := api.CertCreateRequest{Certificate: cert, Key: key, Name: name}
 	reqBody, err := json.Marshal(req)
 	if err != nil {
@@ -46,7 +46,7 @@ func New(c *client.Client, cert string, key string, name string) (api.Cert, erro
 }
 
 // Get information for a certificate
-func Get(c *client.Client, name string) (api.Cert, error) {
+func Get(c *deis.Client, name string) (api.Cert, error) {
 	url := fmt.Sprintf("/v2/certs/%s", name)
 	body, err := c.BasicRequest("GET", url, nil)
 	if err != nil {
@@ -62,14 +62,14 @@ func Get(c *client.Client, name string) (api.Cert, error) {
 }
 
 // Delete removes a cert.
-func Delete(c *client.Client, name string) error {
+func Delete(c *deis.Client, name string) error {
 	url := fmt.Sprintf("/v2/certs/%s", name)
 	_, err := c.BasicRequest("DELETE", url, nil)
 	return err
 }
 
 // Attach a certificate to a domain
-func Attach(c *client.Client, name string, domain string) error {
+func Attach(c *deis.Client, name string, domain string) error {
 	req := api.CertAttachRequest{Domain: domain}
 	reqBody, err := json.Marshal(req)
 	if err != nil {
@@ -82,7 +82,7 @@ func Attach(c *client.Client, name string, domain string) error {
 }
 
 // Detach a certificate from a domain
-func Detach(c *client.Client, name string, domain string) error {
+func Detach(c *deis.Client, name string, domain string) error {
 	url := fmt.Sprintf("/v2/certs/%s/domain/%s", name, domain)
 	_, err := c.BasicRequest("DELETE", url, nil)
 	return err

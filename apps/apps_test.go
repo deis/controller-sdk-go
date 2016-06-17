@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"testing"
 
-	client "github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
 )
 
@@ -50,7 +50,7 @@ type fakeHTTPServer struct {
 }
 
 func (f *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	res.Header().Add("DEIS_API_VERSION", client.APIVersion)
+	res.Header().Add("DEIS_API_VERSION", deis.APIVersion)
 
 	if req.URL.Path == "/v2/apps/" && req.Method == "POST" {
 		body, err := ioutil.ReadAll(req.Body)
@@ -173,13 +173,13 @@ func TestAppsCreate(t *testing.T) {
 		UUID:    "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
 	}
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for _, id := range []string{"example-go", ""} {
-		actual, err := New(client, id)
+		actual, err := New(deis, id)
 
 		if err != nil {
 			t.Fatal(err)
@@ -209,12 +209,12 @@ func TestAppsGet(t *testing.T) {
 		UUID:    "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
 	}
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	actual, err := Get(client, "example-go")
+	actual, err := Get(deis, "example-go")
 
 	if err != nil {
 		t.Fatal(err)
@@ -232,12 +232,12 @@ func TestAppsDestroy(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if err = Delete(client, "example-go"); err != nil {
+	if err = Delete(deis, "example-go"); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -254,12 +254,12 @@ func TestAppsRun(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	actual, err := Run(client, "example-go", "echo hi")
+	actual, err := Run(deis, "example-go", "echo hi")
 
 	if err != nil {
 		t.Fatal(err)
@@ -290,12 +290,12 @@ func TestAppsList(t *testing.T) {
 		},
 	}
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	actual, _, err := List(client, 100)
+	actual, _, err := List(deis, 100)
 
 	if err != nil {
 		t.Fatal(err)
@@ -329,13 +329,13 @@ func TestAppsLogs(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for _, test := range tests {
-		actual, err := Logs(client, "example-go", test.Input)
+		actual, err := Logs(deis, "example-go", test.Input)
 
 		if err != nil {
 			t.Error(err)
@@ -354,12 +354,12 @@ func TestAppsTransfer(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	client, err := client.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if err = Transfer(client, "example-go", "test"); err != nil {
+	if err = Transfer(deis, "example-go", "test"); err != nil {
 		t.Fatal(err)
 	}
 }

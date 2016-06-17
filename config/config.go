@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	client "github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
 )
 
 // List lists an app's config.
-func List(c *client.Client, app string) (api.Config, error) {
+func List(c *deis.Client, app string) (api.Config, error) {
 	u := fmt.Sprintf("/v2/apps/%s/config/", app)
 
 	body, err := c.BasicRequest("GET", u, nil)
@@ -27,7 +27,7 @@ func List(c *client.Client, app string) (api.Config, error) {
 }
 
 // Set sets an app's config variables.
-func Set(c *client.Client, app string, config api.Config) (api.Config, error) {
+func Set(c *deis.Client, app string, config api.Config) (api.Config, error) {
 	body, err := json.Marshal(config)
 
 	if err != nil {

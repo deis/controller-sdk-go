@@ -1,4 +1,4 @@
-package client
+package deis
 
 import (
 	"errors"
@@ -9,9 +9,9 @@ import (
 	"github.com/goware/urlx"
 )
 
-// Client oversees the interaction between the client and controller
+// Client oversees the interaction between the deis and controller
 type Client struct {
-	// HTTP client used to communicate with the API.
+	// HTTP deis used to communicate with the API.
 	HTTPClient *http.Client
 
 	// VerifySSL determines whether or not to verify SSL connections.
@@ -40,8 +40,8 @@ type Client struct {
 const APIVersion = "2.0"
 
 var (
-	// ErrAPIMismatch occurs when the sdk is using a different api version than the client.
-	ErrAPIMismatch = errors.New("API Version Mismatch between server and client")
+	// ErrAPIMismatch occurs when the sdk is using a different api version than the deis.
+	ErrAPIMismatch = errors.New("API Version Mismatch between server and deis")
 
 	// DefaultResponseLimit is the default number of responses to return on requests that can
 	// be limited.
@@ -51,7 +51,7 @@ var (
 	DefaultUserAgent = fmt.Sprintf("Deis Go SDK V%s", APIVersion)
 )
 
-// New creates a new client to communicate with the api.
+// New creates a new deis to communicate with the api.
 func New(verifySSL bool, controllerURL string, token string, username string) (*Client, error) {
 	// urlx, unlike the native url library, uses sane defaults when URL parsing,
 	// preventing issues like missing schemes.
