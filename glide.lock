@@ -1,10 +1,6 @@
-hash: ac873aa922fda6f6b691b5cad3ba565bfd43b8b06dd25c2dc37b2060a75eee75
-updated: 2016-06-15T22:29:23.902171612Z
+hash: 86926427d200b3bee32572243896d4f25270e98a1289189e016e5dc1c4acca74
+updated: 2016-06-16T22:46:39.675929588Z
 imports:
-- name: github.com/deis/pkg
-  version: 189ed6bd6b6aa6629b72c2c5472095e176eec8a6
-  subpackages:
-  - time
 - name: github.com/goware/urlx
   version: 86bdc24560383254e8b977da31a823eddf904409
 - name: github.com/PuerkitoBio/purell
@@ -12,7 +8,7 @@ imports:
 - name: github.com/PuerkitoBio/urlesc
   version: 5fa9ff0392746aeae1c4b37fcc42c65afa7a9587
 - name: golang.org/x/net
-  version: 3f122ce3dbbe488b7e6a8bdb26f41edec852a40b
+  version: d7bf3545bb0dacf009c535b3d3fbf53ac0a339ab
   subpackages:
   - idna
 devImports: []

@@ -1,6 +1,6 @@
 package api
 
-import "github.com/deis/pkg/time"
+import "github.com/deis/controller-sdk-go/pkg/time"
 
 // Cert is the definition of the cert object.
 // Some fields are omtempty because they are only

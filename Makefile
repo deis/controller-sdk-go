@@ -10,7 +10,7 @@ DEV_ENV_PREFIX_CGO_ENABLED := docker run --rm -e GO15VENDOREXPERIMENT=1 -e CGO_E
 DEV_ENV_CMD := ${DEV_ENV_PREFIX} ${DEV_ENV_IMAGE}
 
 GO_FILES = $(wildcard *.go)
-GO_PACKAGES = api apps auth builds certs config domains keys perms ps releases users
+GO_PACKAGES = api apps auth builds certs config domains keys perms ps releases users pkg/time
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 GOFMT = gofmt -e -l -s
 GOTEST = go test --cover --race -v

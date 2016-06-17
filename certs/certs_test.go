@@ -10,7 +10,7 @@ import (
 
 	client "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
-	"github.com/deis/pkg/time"
+	"github.com/deis/controller-sdk-go/pkg/time"
 )
 
 const certsFixture string = `

@@ -1,6 +1,6 @@
 package api
 
-import "github.com/deis/pkg/time"
+import "github.com/deis/controller-sdk-go/pkg/time"
 
 // Pods defines the structure of a process.
 type Pods struct {

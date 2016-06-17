@@ -1,6 +1,3 @@
 package: github.com/deis/controller-sdk-go
 import:
-- package: github.com/deis/pkg
-  subpackages:
-  - time
 - package: github.com/goware/urlx
