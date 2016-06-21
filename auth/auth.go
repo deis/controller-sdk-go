@@ -2,6 +2,8 @@ package auth
 
 import (
 	"encoding/json"
+	"io"
+	"io/ioutil"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -16,7 +18,10 @@ func Register(c *deis.Client, username, password, email string) error {
 		return err
 	}
 
-	_, err = c.BasicRequest("POST", "/v2/auth/register/", body)
+	res, err := c.Request("POST", "/v2/auth/register/", body)
+	if err == nil {
+		res.Body.Close()
+	}
 	return err
 }
 
@@ -29,14 +34,18 @@ func Login(c *deis.Client, username, password string) (string, error) {
 		return "", err
 	}
 
-	body, err := c.BasicRequest("POST", "/v2/auth/login/", reqBody)
-
+	res, err := c.Request("POST", "/v2/auth/login/", reqBody)
 	if err != nil {
 		return "", err
 	}
+	// Fix json.Decoder bug in <go1.7
+	defer func() {
+		io.Copy(ioutil.Discard, res.Body)
+		res.Body.Close()
+	}()
 
 	token := api.AuthLoginResponse{}
-	if err = json.Unmarshal([]byte(body), &token); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&token); err != nil {
 		return "", err
 	}
 
@@ -57,7 +66,10 @@ func Delete(c *deis.Client, username string) error {
 		}
 	}
 
-	_, err = c.BasicRequest("DELETE", "/v2/auth/cancel/", body)
+	res, err := c.Request("DELETE", "/v2/auth/cancel/", body)
+	if err == nil {
+		res.Body.Close()
+	}
 	return err
 }
 
@@ -76,18 +88,22 @@ func Regenerate(c *deis.Client, username string, all bool) (string, error) {
 		return "", err
 	}
 
-	body, err := c.BasicRequest("POST", "/v2/auth/tokens/", reqBody)
-
+	res, err := c.Request("POST", "/v2/auth/tokens/", reqBody)
 	if err != nil {
 		return "", err
 	}
+	// Fix json.Decoder bug in <go1.7
+	defer func() {
+		io.Copy(ioutil.Discard, res.Body)
+		res.Body.Close()
+	}()
 
 	if all == true {
 		return "", nil
 	}
 
 	token := api.AuthRegenerateResponse{}
-	if err = json.Unmarshal([]byte(body), &token); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&token); err != nil {
 		return "", err
 	}
 
@@ -108,6 +124,9 @@ func Passwd(c *deis.Client, username, password, newPassword string) error {
 		return err
 	}
 
-	_, err = c.BasicRequest("POST", "/v2/auth/passwd/", body)
+	res, err := c.Request("POST", "/v2/auth/passwd/", body)
+	if err == nil {
+		res.Body.Close()
+	}
 	return err
 }

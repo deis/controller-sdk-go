@@ -3,6 +3,8 @@ package perms
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -10,14 +12,18 @@ import (
 
 // List users that can access an app.
 func List(c *deis.Client, appID string) ([]string, error) {
-	body, err := c.BasicRequest("GET", fmt.Sprintf("/v2/apps/%s/perms/", appID), nil)
-
+	res, err := c.Request("GET", fmt.Sprintf("/v2/apps/%s/perms/", appID), nil)
 	if err != nil {
 		return []string{}, err
 	}
+	// Fix json.Decoder bug in <go1.7
+	defer func() {
+		io.Copy(ioutil.Discard, res.Body)
+		res.Body.Close()
+	}()
 
 	var users api.PermsAppResponse
-	if err = json.Unmarshal([]byte(body), &users); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&users); err != nil {
 		return []string{}, err
 	}
 
@@ -65,13 +71,12 @@ func doNew(c *deis.Client, u string, username string) error {
 		return err
 	}
 
-	_, err = c.BasicRequest("POST", u, reqBody)
-
-	if err != nil {
-		return err
+	res, err := c.Request("POST", u, reqBody)
+	if err == nil {
+		res.Body.Close()
 	}
 
-	return nil
+	return err
 }
 
 // Delete removes a user from an app.
@@ -85,6 +90,9 @@ func DeleteAdmin(c *deis.Client, username string) error {
 }
 
 func doDelete(c *deis.Client, u string) error {
-	_, err := c.BasicRequest("DELETE", u, nil)
+	res, err := c.Request("DELETE", u, nil)
+	if err == nil {
+		res.Body.Close()
+	}
 	return err
 }

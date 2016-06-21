@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"strconv"
 	"strings"
 
@@ -56,14 +58,18 @@ func New(c *deis.Client, id string) (api.App, error) {
 		}
 	}
 
-	resBody, err := c.BasicRequest("POST", "/v2/apps/", body)
-
+	res, err := c.Request("POST", "/v2/apps/", body)
 	if err != nil {
 		return api.App{}, err
 	}
+	// Fix json.Decoder bug in <go1.7
+	defer func() {
+		io.Copy(ioutil.Discard, res.Body)
+		res.Body.Close()
+	}()
 
 	app := api.App{}
-	if err = json.Unmarshal([]byte(resBody), &app); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&app); err != nil {
 		return api.App{}, err
 	}
 
@@ -77,15 +83,19 @@ func New(c *deis.Client, id string) (api.App, error) {
 func Get(c *deis.Client, appID string) (api.App, error) {
 	u := fmt.Sprintf("/v2/apps/%s/", appID)
 
-	body, err := c.BasicRequest("GET", u, nil)
-
+	res, err := c.Request("GET", u, nil)
 	if err != nil {
 		return api.App{}, err
 	}
+	// Fix json.Decoder bug in <go1.7
+	defer func() {
+		io.Copy(ioutil.Discard, res.Body)
+		res.Body.Close()
+	}()
 
 	app := api.App{}
 
-	if err = json.Unmarshal([]byte(body), &app); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&app); err != nil {
 		return api.App{}, err
 	}
 
@@ -103,15 +113,19 @@ func Logs(c *deis.Client, appID string, lines int) (string, error) {
 		u += "?log_lines=" + strconv.Itoa(lines)
 	}
 
-	body, err := c.BasicRequest("GET", u, nil)
+	res, err := c.Request("GET", u, nil)
+	if err != nil {
+		return "", ErrNoLogs
+	}
+	defer res.Body.Close()
 
-	if err != nil || len(body) < 1 {
-
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil || len(body) < 3 {
 		return "", ErrNoLogs
 	}
 
 	// We need to trim a few characters off the front and end of the string
-	return body[2 : len(body)-1], nil
+	return string(body[2 : len(body)-1]), nil
 }
 
 // Run one time command in an app.
@@ -125,26 +139,28 @@ func Run(c *deis.Client, appID string, command string) (api.AppRunResponse, erro
 
 	u := fmt.Sprintf("/v2/apps/%s/run", appID)
 
-	resBody, err := c.BasicRequest("POST", u, body)
-
+	res, err := c.Request("POST", u, body)
 	if err != nil {
 		return api.AppRunResponse{}, err
 	}
 
-	res := api.AppRunResponse{}
+	arr := api.AppRunResponse{}
 
-	if err = json.Unmarshal([]byte(resBody), &res); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&arr); err != nil {
 		return api.AppRunResponse{}, err
 	}
 
-	return res, nil
+	return arr, nil
 }
 
 // Delete an app.
 func Delete(c *deis.Client, appID string) error {
 	u := fmt.Sprintf("/v2/apps/%s/", appID)
 
-	_, err := c.BasicRequest("DELETE", u, nil)
+	res, err := c.Request("DELETE", u, nil)
+	if err == nil {
+		res.Body.Close()
+	}
 	return err
 }
 
@@ -159,6 +175,9 @@ func Transfer(c *deis.Client, appID string, username string) error {
 		return err
 	}
 
-	_, err = c.BasicRequest("POST", u, body)
+	res, err := c.Request("POST", u, body)
+	if err == nil {
+		res.Body.Close()
+	}
 	return err
 }

@@ -3,6 +3,8 @@ package certs
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -32,13 +34,18 @@ func New(c *deis.Client, cert string, key string, name string) (api.Cert, error)
 		return api.Cert{}, err
 	}
 
-	resBody, err := c.BasicRequest("POST", "/v2/certs/", reqBody)
+	res, err := c.Request("POST", "/v2/certs/", reqBody)
 	if err != nil {
 		return api.Cert{}, err
 	}
+	// Fix json.Decoder bug in <go1.7
+	defer func() {
+		io.Copy(ioutil.Discard, res.Body)
+		res.Body.Close()
+	}()
 
 	resCert := api.Cert{}
-	if err = json.Unmarshal([]byte(resBody), &resCert); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&resCert); err != nil {
 		return api.Cert{}, err
 	}
 
@@ -48,23 +55,31 @@ func New(c *deis.Client, cert string, key string, name string) (api.Cert, error)
 // Get information for a certificate
 func Get(c *deis.Client, name string) (api.Cert, error) {
 	url := fmt.Sprintf("/v2/certs/%s", name)
-	body, err := c.BasicRequest("GET", url, nil)
+	res, err := c.Request("GET", url, nil)
 	if err != nil {
 		return api.Cert{}, err
 	}
+	// Fix json.Decoder bug in <go1.7
+	defer func() {
+		io.Copy(ioutil.Discard, res.Body)
+		res.Body.Close()
+	}()
 
-	res := api.Cert{}
-	if err = json.Unmarshal([]byte(body), &res); err != nil {
+	resCert := api.Cert{}
+	if err = json.NewDecoder(res.Body).Decode(&resCert); err != nil {
 		return api.Cert{}, err
 	}
 
-	return res, nil
+	return resCert, nil
 }
 
 // Delete removes a cert.
 func Delete(c *deis.Client, name string) error {
 	url := fmt.Sprintf("/v2/certs/%s", name)
-	_, err := c.BasicRequest("DELETE", url, nil)
+	res, err := c.Request("DELETE", url, nil)
+	if err == nil {
+		res.Body.Close()
+	}
 	return err
 }
 
@@ -77,13 +92,19 @@ func Attach(c *deis.Client, name string, domain string) error {
 	}
 
 	url := fmt.Sprintf("/v2/certs/%s/domain/", name)
-	_, err = c.BasicRequest("POST", url, reqBody)
+	res, err := c.Request("POST", url, reqBody)
+	if err == nil {
+		res.Body.Close()
+	}
 	return err
 }
 
 // Detach a certificate from a domain
 func Detach(c *deis.Client, name string, domain string) error {
 	url := fmt.Sprintf("/v2/certs/%s/domain/%s", name, domain)
-	_, err := c.BasicRequest("DELETE", url, nil)
+	res, err := c.Request("DELETE", url, nil)
+	if err == nil {
+		res.Body.Close()
+	}
 	return err
 }

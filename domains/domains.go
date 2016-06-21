@@ -3,6 +3,8 @@ package domains
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -37,23 +39,30 @@ func New(c *deis.Client, appID string, domain string) (api.Domain, error) {
 		return api.Domain{}, err
 	}
 
-	resBody, err := c.BasicRequest("POST", u, body)
-
+	res, err := c.Request("POST", u, body)
 	if err != nil {
 		return api.Domain{}, err
 	}
+	// Fix json.Decoder bug in <go1.7
+	defer func() {
+		io.Copy(ioutil.Discard, res.Body)
+		res.Body.Close()
+	}()
 
-	res := api.Domain{}
-	if err = json.Unmarshal([]byte(resBody), &res); err != nil {
+	d := api.Domain{}
+	if err = json.NewDecoder(res.Body).Decode(&d); err != nil {
 		return api.Domain{}, err
 	}
 
-	return res, nil
+	return d, nil
 }
 
 // Delete removes a domain from an app.
 func Delete(c *deis.Client, appID string, domain string) error {
 	u := fmt.Sprintf("/v2/apps/%s/domains/%s", appID, domain)
-	_, err := c.BasicRequest("DELETE", u, nil)
+	res, err := c.Request("DELETE", u, nil)
+	if err == nil {
+		res.Body.Close()
+	}
 	return err
 }

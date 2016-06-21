@@ -3,6 +3,8 @@ package releases
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -30,14 +32,18 @@ func List(c *deis.Client, appID string, results int) ([]api.Release, int, error)
 func Get(c *deis.Client, appID string, version int) (api.Release, error) {
 	u := fmt.Sprintf("/v2/apps/%s/releases/v%d/", appID, version)
 
-	body, err := c.BasicRequest("GET", u, nil)
-
+	res, err := c.Request("GET", u, nil)
 	if err != nil {
 		return api.Release{}, err
 	}
+	// Fix json.Decoder bug in <go1.7
+	defer func() {
+		io.Copy(ioutil.Discard, res.Body)
+		res.Body.Close()
+	}()
 
 	release := api.Release{}
-	if err = json.Unmarshal([]byte(body), &release); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&release); err != nil {
 		return api.Release{}, err
 	}
 
@@ -60,15 +66,19 @@ func Rollback(c *deis.Client, appID string, version int) (int, error) {
 		}
 	}
 
-	body, err := c.BasicRequest("POST", u, reqBody)
-
+	res, err := c.Request("POST", u, reqBody)
 	if err != nil {
 		return -1, err
 	}
+	// Fix json.Decoder bug in <go1.7
+	defer func() {
+		io.Copy(ioutil.Discard, res.Body)
+		res.Body.Close()
+	}()
 
 	response := api.ReleaseRollback{}
 
-	if err = json.Unmarshal([]byte(body), &response); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&response); err != nil {
 		return -1, err
 	}
 

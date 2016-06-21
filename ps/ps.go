@@ -3,6 +3,8 @@ package ps
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -34,7 +36,10 @@ func Scale(c *deis.Client, appID string, targets map[string]int) error {
 		return err
 	}
 
-	_, err = c.BasicRequest("POST", u, body)
+	res, err := c.Request("POST", u, body)
+	if err == nil {
+		return res.Body.Close()
+	}
 	return err
 }
 
@@ -52,14 +57,18 @@ func Restart(c *deis.Client, appID string, procType string, name string) ([]api.
 		}
 	}
 
-	body, err := c.BasicRequest("POST", u, nil)
-
+	res, err := c.Request("POST", u, nil)
 	if err != nil {
 		return []api.Pods{}, err
 	}
+	// Fix json.Decoder bug in <go1.7
+	defer func() {
+		io.Copy(ioutil.Discard, res.Body)
+		res.Body.Close()
+	}()
 
 	procs := []api.Pods{}
-	if err = json.Unmarshal([]byte(body), &procs); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&procs); err != nil {
 		return []api.Pods{}, err
 	}
 

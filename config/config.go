@@ -3,6 +3,8 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -12,14 +14,18 @@ import (
 func List(c *deis.Client, app string) (api.Config, error) {
 	u := fmt.Sprintf("/v2/apps/%s/config/", app)
 
-	body, err := c.BasicRequest("GET", u, nil)
-
+	res, err := c.Request("GET", u, nil)
 	if err != nil {
 		return api.Config{}, err
 	}
+	// Fix json.Decoder bug in <go1.7
+	defer func() {
+		io.Copy(ioutil.Discard, res.Body)
+		res.Body.Close()
+	}()
 
 	config := api.Config{}
-	if err = json.Unmarshal([]byte(body), &config); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&config); err != nil {
 		return api.Config{}, err
 	}
 
@@ -36,14 +42,18 @@ func Set(c *deis.Client, app string, config api.Config) (api.Config, error) {
 
 	u := fmt.Sprintf("/v2/apps/%s/config/", app)
 
-	resBody, err := c.BasicRequest("POST", u, body)
-
+	res, err := c.Request("POST", u, body)
 	if err != nil {
 		return api.Config{}, err
 	}
+	// Fix json.Decoder bug in <go1.7
+	defer func() {
+		io.Copy(ioutil.Discard, res.Body)
+		res.Body.Close()
+	}()
 
 	newConfig := api.Config{}
-	if err = json.Unmarshal([]byte(resBody), &newConfig); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&newConfig); err != nil {
 		return api.Config{}, err
 	}
 

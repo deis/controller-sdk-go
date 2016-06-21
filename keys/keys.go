@@ -3,6 +3,8 @@ package keys
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -29,14 +31,18 @@ func New(c *deis.Client, id string, pubKey string) (api.Key, error) {
 	req := api.KeyCreateRequest{ID: id, Public: pubKey}
 	body, err := json.Marshal(req)
 
-	resBody, err := c.BasicRequest("POST", "/v2/keys/", body)
-
+	res, err := c.Request("POST", "/v2/keys/", body)
 	if err != nil {
 		return api.Key{}, err
 	}
+	// Fix json.Decoder bug in <go1.7
+	defer func() {
+		io.Copy(ioutil.Discard, res.Body)
+		res.Body.Close()
+	}()
 
 	key := api.Key{}
-	if err = json.Unmarshal([]byte(resBody), &key); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&key); err != nil {
 		return api.Key{}, err
 	}
 
@@ -47,6 +53,9 @@ func New(c *deis.Client, id string, pubKey string) (api.Key, error) {
 func Delete(c *deis.Client, keyID string) error {
 	u := fmt.Sprintf("/v2/keys/%s", keyID)
 
-	_, err := c.BasicRequest("DELETE", u, nil)
+	res, err := c.Request("DELETE", u, nil)
+	if err == nil {
+		res.Body.Close()
+	}
 	return err
 }

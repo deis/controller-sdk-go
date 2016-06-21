@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -254,7 +255,7 @@ func TestDeleteUserApp(t *testing.T) {
 	err = Delete(deis, "admin")
 	// should be a 409 Conflict
 
-	expected := fmt.Errorf("\n%s %s\n\n", "409", "Conflict")
+	expected := errors.New("409 Conflict")
 	if reflect.DeepEqual(err, expected) == false {
 		t.Errorf("got '%s' but expected '%s'", err, expected)
 	}

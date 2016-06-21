@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"reflect"
 	"strconv"
 	"strings"
 )
@@ -55,7 +54,7 @@ func (c *Client) Request(method string, path string, body []byte) (*http.Respons
 		return nil, err
 	}
 
-	if err = checkForErrors(res, ""); err != nil {
+	if err = checkForErrors(res); err != nil {
 		return nil, err
 	}
 
@@ -70,88 +69,48 @@ func (c *Client) Request(method string, path string, body []byte) (*http.Respons
 
 // LimitedRequest allows limiting the number of responses in a request.
 func (c *Client) LimitedRequest(path string, results int) (string, int, error) {
-	body, err := c.BasicRequest("GET", path+"?limit="+strconv.Itoa(results), nil)
+	res, err := c.Request("GET", path+"?limit="+strconv.Itoa(results), nil)
 
 	if err != nil {
 		return "", -1, err
 	}
 
-	res := make(map[string]interface{})
-	if err = json.Unmarshal([]byte(body), &res); err != nil {
-		return "", -1, err
-	}
-
-	out, err := json.Marshal(res["results"].([]interface{}))
-
-	if err != nil {
-		return "", -1, err
-	}
-
-	return string(out), int(res["count"].(float64)), nil
-}
-
-// BasicRequest makes a simple http request on the controller.
-func (c *Client) BasicRequest(method string, path string, body []byte) (string, error) {
-	res, err := c.Request(method, path, body)
-
-	if err != nil {
-		return "", err
-	}
 	defer res.Body.Close()
 
-	resBody, err := ioutil.ReadAll(res.Body)
+	body, err := ioutil.ReadAll(res.Body)
 
 	if err != nil {
-		return "", err
+		return "", -1, err
 	}
-	return string(resBody), checkForErrors(res, string(resBody))
+
+	r := make(map[string]interface{})
+	if err = json.Unmarshal([]byte(body), &r); err != nil {
+		return "", -1, err
+	}
+
+	out, err := json.Marshal(r["results"].([]interface{}))
+
+	if err != nil {
+		return "", -1, err
+	}
+
+	return string(out), int(r["count"].(float64)), nil
 }
 
-func checkForErrors(res *http.Response, body string) error {
+func checkForErrors(res *http.Response) error {
 
 	// If response is not an error, return nil.
 	if res.StatusCode > 199 && res.StatusCode < 400 {
 		return nil
 	}
 
-	// Read the response body if none was provided.
-	if body == "" {
-		defer res.Body.Close()
-		resBody, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			return err
-		}
-		body = string(resBody)
-	}
+	// TEMPORARY: Close body because methods won't close it (for now) because
+	// they can't tell the difference between an HTTP error and a bad status code
+	// (which has a body to close)
+	res.Body.Close()
 
-	// Unmarshal the response as JSON, or return the status and body.
-	bodyMap := make(map[string]interface{})
-	if err := json.Unmarshal([]byte(body), &bodyMap); err != nil {
-		return fmt.Errorf("\n%s\n%s\n", res.Status, body)
-	}
-
-	errorMessage := fmt.Sprintf("\n%s\n", res.Status)
-	for key, value := range bodyMap {
-		switch v := value.(type) {
-		case string:
-			errorMessage += fmt.Sprintf("%s: %s\n", key, v)
-		case []interface{}:
-			for _, subValue := range v {
-				switch sv := subValue.(type) {
-				case string:
-					errorMessage += fmt.Sprintf("%s: %s\n", key, sv)
-				default:
-					fmt.Printf("Unexpected type in %s error message array. Contents: %v",
-						reflect.TypeOf(value), sv)
-				}
-			}
-		default:
-			fmt.Printf("Cannot handle key %s in error message, type %s. Contents: %v",
-				key, reflect.TypeOf(value), bodyMap[key])
-		}
-	}
-
-	return errors.New(errorMessage)
+	//TODO: Implement better error system!
+	return errors.New(res.Status)
 }
 
 // CheckConnection checks that the user is connected to a network and the URL points to a valid controller.

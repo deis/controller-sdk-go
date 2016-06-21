@@ -51,7 +51,7 @@ func (f fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if req.URL.Path == "/basic/" && req.Method == "POST" {
+	if req.URL.Path == "/request/" && req.Method == "POST" {
 		eT := "token abc"
 		if req.Header.Get("Authorization") != eT {
 			fmt.Printf("Token Wrong: Expected %s, Got %s\n", eT, req.Header.Get("Authorization"))
@@ -84,7 +84,7 @@ func (f fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		res.Write([]byte("basic"))
+		res.Write([]byte("request"))
 		return
 	}
 
@@ -146,15 +146,16 @@ func TestBasicRequest(t *testing.T) {
 	}
 	deis.UserAgent = "test"
 
-	body, err := deis.BasicRequest("POST", "/basic/", []byte("test"))
-
+	res, err := deis.Request("POST", "/request/", []byte("test"))
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
 
-	expected := "basic"
-	if body != expected {
-		t.Errorf("Expected %s, Got %s", expected, body)
+	expected := "request"
+	if string(body) != expected {
+		t.Errorf("Expected %s, Got %s", expected, string(body))
 	}
 
 	if deis.ControllerAPIVersion != handler.Version {
@@ -164,73 +165,6 @@ func TestBasicRequest(t *testing.T) {
 	// Make sure the request doesn't modify the URL
 	if deis.ControllerURL.String() != server.URL {
 		t.Errorf("Expected %s, Got %s", server.URL, deis.ControllerURL.String())
-	}
-}
-
-func TestCheckErrors(t *testing.T) {
-	t.Parallel()
-
-	expected := `
-404 NOT FOUND
-error: This is an error.
-error_array: This is an array.
-error_array: Foo!
-`
-	altExpected := `
-404 NOT FOUND
-error_array: This is an array.
-error_array: Foo!
-error: This is an error.
-`
-
-	body := `
-{
-	"error": "This is an error.",
-	"error_array": [
-		"This is an array.",
-		"Foo!"
-	]
-}`
-
-	res := http.Response{
-		StatusCode: 404,
-		Status:     "404 NOT FOUND",
-	}
-
-	actual := checkForErrors(&res, body).Error()
-
-	if actual != expected && actual != altExpected {
-		t.Errorf("Expected %s or %s, Got %s", expected, altExpected, actual)
-	}
-
-	expected = `
-503 Service Temporarily Unavailable
-<html>
-<head><title>503 Service Temporarily Unavailable</title></head>
-<body bgcolor="white">
-<center><h1>503 Service Temporarily Unavailable</h1></center>
-<hr><center>nginx/1.9.4</center>
-</body>
-</html>
-`
-
-	body = `<html>
-<head><title>503 Service Temporarily Unavailable</title></head>
-<body bgcolor="white">
-<center><h1>503 Service Temporarily Unavailable</h1></center>
-<hr><center>nginx/1.9.4</center>
-</body>
-</html>`
-
-	res = http.Response{
-		StatusCode: http.StatusServiceUnavailable,
-		Status:     "503 Service Temporarily Unavailable",
-	}
-
-	actual = checkForErrors(&res, body).Error()
-
-	if actual != expected {
-		t.Errorf("Expected %s, Got %s", expected, actual)
 	}
 }
 
@@ -250,7 +184,7 @@ func TestCheckErrorsReturnsNil(t *testing.T) {
 	}
 
 	for _, res := range responses {
-		if err := checkForErrors(&res, ""); err != nil {
+		if err := checkForErrors(&res); err != nil {
 			t.Fatal(err)
 		}
 	}
