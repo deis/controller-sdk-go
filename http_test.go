@@ -168,28 +168,6 @@ func TestBasicRequest(t *testing.T) {
 	}
 }
 
-func TestCheckErrorsReturnsNil(t *testing.T) {
-	t.Parallel()
-
-	responses := []http.Response{
-		{
-			StatusCode: http.StatusOK,
-		},
-		{
-			StatusCode: http.StatusCreated,
-		},
-		{
-			StatusCode: http.StatusNoContent,
-		},
-	}
-
-	for _, res := range responses {
-		if err := checkForErrors(&res); err != nil {
-			t.Fatal(err)
-		}
-	}
-}
-
 func TestLimitedRequest(t *testing.T) {
 	t.Parallel()
 

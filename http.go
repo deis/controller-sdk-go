@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -95,22 +94,6 @@ func (c *Client) LimitedRequest(path string, results int) (string, int, error) {
 	}
 
 	return string(out), int(r["count"].(float64)), nil
-}
-
-func checkForErrors(res *http.Response) error {
-
-	// If response is not an error, return nil.
-	if res.StatusCode > 199 && res.StatusCode < 400 {
-		return nil
-	}
-
-	// TEMPORARY: Close body because methods won't close it (for now) because
-	// they can't tell the difference between an HTTP error and a bad status code
-	// (which has a body to close)
-	res.Body.Close()
-
-	//TODO: Implement better error system!
-	return errors.New(res.Status)
 }
 
 // CheckConnection checks that the user is connected to a network and the URL points to a valid controller.

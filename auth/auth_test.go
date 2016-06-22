@@ -1,12 +1,10 @@
 package auth
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 
 	deis "github.com/deis/controller-sdk-go"
@@ -247,17 +245,16 @@ func TestDeleteUserApp(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	d, err := deis.New(false, server.URL, "abc", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = Delete(deis, "admin")
+	err = Delete(d, "admin")
 	// should be a 409 Conflict
 
-	expected := errors.New("409 Conflict")
-	if reflect.DeepEqual(err, expected) == false {
-		t.Errorf("got '%s' but expected '%s'", err, expected)
+	if err != deis.ErrConflict {
+		t.Errorf("got '%s' but expected '%s'", err, deis.ErrConflict)
 	}
 }
 

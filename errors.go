@@ -1,0 +1,208 @@
+package deis
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"strings"
+)
+
+const (
+	// formatErrUnknown is used to create an dynamic error if no error matches
+	formatErrUnknown = "Unknown Error (%d): %s"
+	// fieldReqMsg is API error stating a field is required.
+	fieldReqMsg       = "This field is required."
+	invalidUserMsg    = "Enter a valid username. This value may contain only letters, numbers and @/./+/-/_ characters."
+	failedLoginMsg    = "Unable to log in with provided credentials."
+	invalidAppNameMsg = "App name can only contain a-z (lowercase), 0-9 and hypens"
+	invalidNameMsg    = "Can only contain a-z (lowercase), 0-9 and hypens"
+	invalidCertMsg    = "Could not load certificate"
+	invalidPodMsg     = "does not exist in application"
+	invalidDomainMsg  = "Hostname does not look valid."
+	invalidVersionMsg = "version cannot be below 0"
+	invalidKeyMsg     = "Key contains invalid base64 chars"
+)
+
+var (
+	// ErrNotFound is returned when the server returns a 404.
+	ErrNotFound = errors.New("Not Found")
+	// ErrServerError is returned when the server returns a 500.
+	ErrServerError = errors.New("Internal Server Error")
+	// ErrMethodNotAllowed is thrown when using a unsupposrted method.
+	// This should not come up unless there in an bug in the SDK.
+	ErrMethodNotAllowed = errors.New("Method Not Allowed")
+	// ErrInvalidUsername is returned when the user specifies an invalid or missing username.
+	ErrInvalidUsername = errors.New(invalidUserMsg)
+	// ErrMissingPassword is returned when a password is not sent with the request.
+	ErrMissingPassword = errors.New("A Password is required")
+	// ErrLogin is returned when the api cannot login fails with provided username and password
+	ErrLogin = errors.New(failedLoginMsg)
+	// ErrUnauthorized is given when the API returns a 401.
+	ErrUnauthorized = errors.New("Unauthorized: Missing or Invalid Token")
+	// ErrInvalidAppName is returned when the user specifies an invalid app name.
+	ErrInvalidAppName = errors.New(invalidAppNameMsg)
+	// ErrConflict is returned when the API returns a 409.
+	ErrConflict = errors.New("This action could not be completed due to a conflict.")
+	// ErrForbidden is returned when the API returns a 403.
+	ErrForbidden = errors.New("You do not have permission to perform this action.")
+	// ErrMissingKey is returned when a key is not sent with the request.
+	ErrMissingKey = errors.New("A key is required")
+	// ErrInvalidName is returned when a name is invalid or missing.
+	ErrInvalidName = errors.New(invalidNameMsg)
+	// ErrInvalidCertificate is returned when a certififate is missing or invalid
+	ErrInvalidCertificate = errors.New(invalidCertMsg)
+	// ErrPodNotFound is returned when a pod type is not Found
+	ErrPodNotFound = errors.New("Pod not found in application")
+	// ErrInvalidDomain is returned when a domain is missing or invalid
+	ErrInvalidDomain = errors.New(invalidDomainMsg)
+	// ErrInvalidImage is returned when a image is missing or invalid
+	ErrInvalidImage = errors.New("The given image is invalid")
+	// ErrInvalidVersion is returned when a version is invalid
+	ErrInvalidVersion = errors.New("The given version is invalid")
+	// ErrMissingID is returned when a ID is missing
+	ErrMissingID = errors.New("An id is required")
+)
+
+func checkForErrors(res *http.Response) error {
+	if res.StatusCode >= 200 && res.StatusCode < 400 {
+		return nil
+	}
+
+	// Fix json.Decoder bug in <go1.7
+	defer func() {
+		io.Copy(ioutil.Discard, res.Body)
+		res.Body.Close()
+	}()
+
+	switch res.StatusCode {
+	case 400:
+		bodyMap := make(map[string]interface{})
+		if err := json.NewDecoder(res.Body).Decode(&bodyMap); err != nil {
+			return unknownError(res.StatusCode, err)
+		}
+
+		if scanResponse(bodyMap, "username", []string{fieldReqMsg, invalidUserMsg}, true) {
+			return ErrInvalidUsername
+		}
+
+		if scanResponse(bodyMap, "password", []string{fieldReqMsg}, true) {
+			return ErrMissingPassword
+		}
+
+		if scanResponse(bodyMap, "non_field_errors", []string{failedLoginMsg}, true) {
+			return ErrLogin
+		}
+
+		if scanResponse(bodyMap, "id", []string{invalidAppNameMsg}, true) {
+			return ErrInvalidAppName
+		}
+
+		if scanResponse(bodyMap, "key", []string{fieldReqMsg}, true) {
+			return ErrMissingKey
+		}
+
+		if scanResponse(bodyMap, "public", []string{fieldReqMsg, invalidKeyMsg}, true) {
+			return ErrMissingKey
+		}
+
+		if scanResponse(bodyMap, "certificate", []string{fieldReqMsg, invalidCertMsg}, false) {
+			return ErrInvalidCertificate
+		}
+
+		if scanResponse(bodyMap, "name", []string{fieldReqMsg, invalidNameMsg}, true) {
+			return ErrInvalidName
+		}
+
+		if scanResponse(bodyMap, "domain", []string{invalidDomainMsg}, true) {
+			return ErrInvalidDomain
+		}
+
+		if scanResponse(bodyMap, "image", []string{fieldReqMsg}, true) {
+			return ErrInvalidImage
+		}
+
+		if scanResponse(bodyMap, "id", []string{fieldReqMsg}, true) {
+			return ErrMissingID
+		}
+
+		if v, ok := bodyMap["detail"].(string); ok {
+			if strings.Contains(v, invalidPodMsg) {
+				return ErrPodNotFound
+			}
+			if strings.Contains(v, invalidVersionMsg) {
+				return ErrInvalidVersion
+			}
+		}
+
+		return unknownError(res.StatusCode, bodyMap)
+	case 401:
+		return ErrUnauthorized
+	case 403:
+		return ErrForbidden
+	case 404:
+		return ErrNotFound
+	case 405:
+		return ErrMethodNotAllowed
+	case 409:
+		return ErrConflict
+	case 500:
+		return ErrServerError
+	default:
+		out, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return unknownError(res.StatusCode, err)
+		}
+		return unknownError(res.StatusCode, out)
+	}
+}
+
+func arrayContents(m map[string]interface{}, field string) []string {
+	if v, ok := m[field]; ok {
+		if a, ok := v.([]interface{}); ok {
+			sa := []string{}
+
+			for _, i := range a {
+				if s, ok := i.(string); ok {
+					sa = append(sa, s)
+				}
+			}
+			return sa
+		}
+	}
+
+	return []string{}
+}
+
+func arrayContains(search string, completeMatch bool, array []string) bool {
+	for _, element := range array {
+		if completeMatch {
+			if element == search {
+				return true
+			}
+		} else {
+			if strings.Contains(element, search) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func unknownError(sc int, k interface{}) error {
+	return fmt.Errorf(formatErrUnknown, sc, k)
+}
+
+func scanResponse(
+	body map[string]interface{}, field string, errMsgs []string, completeMatch bool) bool {
+	for _, msg := range errMsgs {
+		if arrayContains(msg, completeMatch, arrayContents(body, field)) {
+			return true
+		}
+	}
+
+	return false
+}
