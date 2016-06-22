@@ -24,6 +24,9 @@ const (
 	invalidDomainMsg  = "Hostname does not look valid."
 	invalidVersionMsg = "version cannot be below 0"
 	invalidKeyMsg     = "Key contains invalid base64 chars"
+	duplicateUserMsg  = "A user with that username already exists."
+	invalidEmailMsg   = "Enter a valid email address."
+	invalidTagMsg     = "No nodes matched the provided labels"
 )
 
 var (
@@ -36,6 +39,8 @@ var (
 	ErrMethodNotAllowed = errors.New("Method Not Allowed")
 	// ErrInvalidUsername is returned when the user specifies an invalid or missing username.
 	ErrInvalidUsername = errors.New(invalidUserMsg)
+	// ErrDuplicateUsername is returned when trying to register a user that already exists.
+	ErrDuplicateUsername = errors.New(duplicateUserMsg)
 	// ErrMissingPassword is returned when a password is not sent with the request.
 	ErrMissingPassword = errors.New("A Password is required")
 	// ErrLogin is returned when the api cannot login fails with provided username and password
@@ -64,6 +69,10 @@ var (
 	ErrInvalidVersion = errors.New("The given version is invalid")
 	// ErrMissingID is returned when a ID is missing
 	ErrMissingID = errors.New("An id is required")
+	// ErrInvalidEmail is returned when a user gives an invalid email.
+	ErrInvalidEmail = errors.New(invalidEmailMsg)
+	// ErrTagNotFound is returned when no node can be found that matches the tag
+	ErrTagNotFound = errors.New(invalidTagMsg)
 )
 
 func checkForErrors(res *http.Response) error {
@@ -86,6 +95,10 @@ func checkForErrors(res *http.Response) error {
 
 		if scanResponse(bodyMap, "username", []string{fieldReqMsg, invalidUserMsg}, true) {
 			return ErrInvalidUsername
+		}
+
+		if scanResponse(bodyMap, "username", []string{duplicateUserMsg}, true) {
+			return ErrDuplicateUsername
 		}
 
 		if scanResponse(bodyMap, "password", []string{fieldReqMsg}, true) {
@@ -128,12 +141,19 @@ func checkForErrors(res *http.Response) error {
 			return ErrMissingID
 		}
 
+		if scanResponse(bodyMap, "email", []string{invalidEmailMsg}, true) {
+			return ErrInvalidEmail
+		}
+
 		if v, ok := bodyMap["detail"].(string); ok {
 			if strings.Contains(v, invalidPodMsg) {
 				return ErrPodNotFound
 			}
 			if strings.Contains(v, invalidVersionMsg) {
 				return ErrInvalidVersion
+			}
+			if strings.Contains(v, invalidTagMsg) {
+				return ErrTagNotFound
 			}
 		}
 

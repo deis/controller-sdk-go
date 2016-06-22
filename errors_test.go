@@ -78,6 +78,13 @@ func TestErrors(t *testing.T) {
 		errorTest{
 			res: &http.Response{
 				StatusCode: 400,
+				Body:       readCloser(`{"username":["A user with that username already exists."]}`),
+			},
+			expected: ErrDuplicateUsername,
+		},
+		errorTest{
+			res: &http.Response{
+				StatusCode: 400,
 				Body:       readCloser(`{"password":["This field is required."]}`),
 			},
 			expected: ErrMissingPassword,
@@ -179,6 +186,20 @@ func TestErrors(t *testing.T) {
 				Body:       readCloser(`{"id":["This field is required."]}`),
 			},
 			expected: ErrMissingID,
+		},
+		errorTest{
+			res: &http.Response{
+				StatusCode: 400,
+				Body:       readCloser(`{"email":["Enter a valid email address."]}`),
+			},
+			expected: ErrInvalidEmail,
+		},
+		errorTest{
+			res: &http.Response{
+				StatusCode: 400,
+				Body:       readCloser(`{"detail":"No nodes matched the provided labels: foo=bar"}`),
+			},
+			expected: ErrTagNotFound,
 		},
 		errorTest{
 			res: &http.Response{
