@@ -106,6 +106,13 @@ func TestErrors(t *testing.T) {
 		errorTest{
 			res: &http.Response{
 				StatusCode: 400,
+				Body:       readCloser(`{"id":["App with this id already exists."]}`),
+			},
+			expected: ErrDuplicateApp,
+		},
+		errorTest{
+			res: &http.Response{
+				StatusCode: 400,
 				Body:       readCloser(`{"certificate": ["This field is required."]}`),
 			},
 			expected: ErrInvalidCertificate,

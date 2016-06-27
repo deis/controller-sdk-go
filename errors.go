@@ -27,6 +27,7 @@ const (
 	duplicateUserMsg  = "A user with that username already exists."
 	invalidEmailMsg   = "Enter a valid email address."
 	invalidTagMsg     = "No nodes matched the provided labels"
+	duplicateIDMsg    = "App with this id already exists."
 )
 
 var (
@@ -73,6 +74,8 @@ var (
 	ErrInvalidEmail = errors.New(invalidEmailMsg)
 	// ErrTagNotFound is returned when no node can be found that matches the tag
 	ErrTagNotFound = errors.New(invalidTagMsg)
+	// ErrDuplicateApp is returned when create an app with an ID that already exists
+	ErrDuplicateApp = errors.New(duplicateIDMsg)
 )
 
 func checkForErrors(res *http.Response) error {
@@ -111,6 +114,10 @@ func checkForErrors(res *http.Response) error {
 
 		if scanResponse(bodyMap, "id", []string{invalidAppNameMsg}, true) {
 			return ErrInvalidAppName
+		}
+
+		if scanResponse(bodyMap, "id", []string{duplicateIDMsg}, true) {
+			return ErrDuplicateApp
 		}
 
 		if scanResponse(bodyMap, "key", []string{fieldReqMsg}, true) {
