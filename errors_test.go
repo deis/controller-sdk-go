@@ -99,7 +99,7 @@ func TestErrors(t *testing.T) {
 		errorTest{
 			res: &http.Response{
 				StatusCode: 400,
-				Body:       readCloser(`{"id":["App name can only contain a-z (lowercase), 0-9 and hypens","Enter a valid \"slug\" consisting of letters, numbers, underscores or hyphens."]}`),
+				Body:       readCloser(`{"id":["App name can only contain a-z (lowercase), 0-9 and hyphens","Enter a valid \"slug\" consisting of letters, numbers, underscores or hyphens."]}`),
 			},
 			expected: ErrInvalidAppName,
 		},
@@ -155,7 +155,7 @@ func TestErrors(t *testing.T) {
 		errorTest{
 			res: &http.Response{
 				StatusCode: 400,
-				Body:       readCloser(`{"name":["Can only contain a-z (lowercase), 0-9 and hypens"]}`),
+				Body:       readCloser(`{"name":["Can only contain a-z (lowercase), 0-9 and hyphens"]}`),
 			},
 			expected: ErrInvalidName,
 		},
