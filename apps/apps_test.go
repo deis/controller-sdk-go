@@ -173,7 +173,7 @@ func TestAppsCreate(t *testing.T) {
 		UUID:    "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
 	}
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -209,7 +209,7 @@ func TestAppsGet(t *testing.T) {
 		UUID:    "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
 	}
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -232,7 +232,7 @@ func TestAppsDestroy(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -254,7 +254,7 @@ func TestAppsRun(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -290,7 +290,7 @@ func TestAppsList(t *testing.T) {
 		},
 	}
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -329,7 +329,7 @@ func TestAppsLogs(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -354,7 +354,7 @@ func TestAppsTransfer(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}

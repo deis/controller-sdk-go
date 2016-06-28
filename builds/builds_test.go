@@ -110,7 +110,7 @@ func TestBuildsList(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -145,7 +145,7 @@ func TestBuildCreate(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}

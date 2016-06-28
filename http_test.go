@@ -100,7 +100,7 @@ func TestCheckConnection(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := New(false, server.URL, "", "")
+	deis, err := New(false, server.URL, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -118,7 +118,7 @@ func TestAPIMistmatch(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := New(false, server.URL, "", "")
+	deis, err := New(false, server.URL, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -140,7 +140,7 @@ func TestBasicRequest(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := New(false, server.URL, "abc", "")
+	deis, err := New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -175,7 +175,7 @@ func TestLimitedRequest(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := New(false, server.URL, "abc", "")
+	deis, err := New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}

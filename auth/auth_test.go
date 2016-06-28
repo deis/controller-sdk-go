@@ -165,7 +165,7 @@ func TestRegister(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -182,7 +182,7 @@ func TestLogin(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -207,7 +207,7 @@ func TestPasswd(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -224,7 +224,7 @@ func TestDelete(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -245,7 +245,7 @@ func TestDeleteUserApp(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	d, err := deis.New(false, server.URL, "abc", "")
+	d, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -265,7 +265,7 @@ func TestRegenerate(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -122,7 +122,7 @@ func TestCertsList(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -161,7 +161,7 @@ func TestCert(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -200,7 +200,7 @@ func TestCertInfo(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -222,7 +222,7 @@ func TestCertDeletion(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -243,7 +243,7 @@ func TestCertAttach(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -269,7 +269,7 @@ func TestCertDetach(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -125,7 +125,7 @@ func TestList(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -153,7 +153,7 @@ func TestListAdmins(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -176,7 +176,7 @@ func TestNew(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -193,7 +193,7 @@ func TestNewAdmin(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -210,7 +210,7 @@ func TestDelete(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -227,7 +227,7 @@ func TestDeleteAdmin(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := deis.New(false, server.URL, "abc", "")
+	deis, err := deis.New(false, server.URL, "abc")
 	if err != nil {
 		t.Fatal(err)
 	}
