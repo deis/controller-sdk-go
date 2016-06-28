@@ -1,3 +1,4 @@
+// Package apps provides methods for managing deis apps.
 package apps
 
 import (
@@ -44,13 +45,16 @@ func List(c *deis.Client, results int) ([]api.App, int, error) {
 	return apps, count, nil
 }
 
-// New creates a new app.
-func New(c *deis.Client, id string) (api.App, error) {
+// New creates a new app with the given appID. Passing an empty string will result in
+// a randomized app name.
+//
+// If the app name already exists, the error deis.ErrDuplicateApp will be returned.
+func New(c *deis.Client, appID string) (api.App, error) {
 	body := []byte{}
 
 	var err error
-	if id != "" {
-		req := api.AppCreateRequest{ID: id}
+	if appID != "" {
+		req := api.AppCreateRequest{ID: appID}
 		body, err = json.Marshal(req)
 
 		if err != nil {
@@ -79,7 +83,7 @@ func New(c *deis.Client, id string) (api.App, error) {
 	return app, nil
 }
 
-// Get app details from a Deis controller.
+// Get app details from a controller.
 func Get(c *deis.Client, appID string) (api.App, error) {
 	u := fmt.Sprintf("/v2/apps/%s/", appID)
 
@@ -105,7 +109,8 @@ func Get(c *deis.Client, appID string) (api.App, error) {
 	return app, nil
 }
 
-// Logs retrieves logs from an app.
+// Logs retrieves logs from an app. The number of log lines fetched can be set by the lines
+// argument. Setting lines = -1 will retrive all app logs.
 func Logs(c *deis.Client, appID string, lines int) (string, error) {
 	u := fmt.Sprintf("/v2/apps/%s/logs", appID)
 
@@ -128,7 +133,8 @@ func Logs(c *deis.Client, appID string, lines int) (string, error) {
 	return string(body[2 : len(body)-1]), nil
 }
 
-// Run one time command in an app.
+// Run a one-time command in your app. This will start a kubernetes job with the
+// same container image and environment as the rest of the app.
 func Run(c *deis.Client, appID string, command string) (api.AppRunResponse, error) {
 	req := api.AppRunRequest{Command: command}
 	body, err := json.Marshal(req)
