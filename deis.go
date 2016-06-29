@@ -31,7 +31,7 @@ type Client struct {
 }
 
 // APIVersion is the api version the sdk is compatible with.
-const APIVersion = "2.0"
+const APIVersion = "2.1"
 
 var (
 	// ErrAPIMismatch occurs when the sdk is using a different api version than the deis.
