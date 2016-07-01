@@ -1,3 +1,4 @@
+// Package domains provides methods for managing an app's domains.
 package domains
 
 import (
