@@ -245,6 +245,13 @@ func TestErrors(t *testing.T) {
 		},
 		errorTest{
 			res: &http.Response{
+				StatusCode: 422,
+				Body:       readCloser(""),
+			},
+			expected: ErrUnprocessable,
+		},
+		errorTest{
+			res: &http.Response{
 				StatusCode: 500,
 				Body:       readCloser(""),
 			},

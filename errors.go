@@ -76,6 +76,8 @@ var (
 	ErrTagNotFound = errors.New(invalidTagMsg)
 	// ErrDuplicateApp is returned when create an app with an ID that already exists
 	ErrDuplicateApp = errors.New(duplicateIDMsg)
+	// ErrUnprocessable is returned when the controller throws a 422.
+	ErrUnprocessable = errors.New("Unable to process your request.")
 )
 
 func checkForErrors(res *http.Response) error {
@@ -175,6 +177,8 @@ func checkForErrors(res *http.Response) error {
 		return ErrMethodNotAllowed
 	case 409:
 		return ErrConflict
+	case 422:
+		return ErrUnprocessable
 	case 500:
 		return ErrServerError
 	default:
