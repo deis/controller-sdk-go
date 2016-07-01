@@ -1,3 +1,4 @@
+// Package perms provides methods for managing user app and administrative permissions.
 package perms
 
 import (
@@ -30,7 +31,7 @@ func List(c *deis.Client, appID string) ([]string, error) {
 	return users.Users, nil
 }
 
-// ListAdmins lists administrators.
+// ListAdmins lists deis platform administrators.
 func ListAdmins(c *deis.Client, results int) ([]string, int, error) {
 	body, count, err := c.LimitedRequest("/v2/admin/perms/", results)
 
@@ -52,7 +53,7 @@ func ListAdmins(c *deis.Client, results int) ([]string, int, error) {
 	return usersList, count, nil
 }
 
-// New adds a user to an app.
+// New gives a user access to an app.
 func New(c *deis.Client, appID string, username string) error {
 	return doNew(c, fmt.Sprintf("/v2/apps/%s/perms/", appID), username)
 }
