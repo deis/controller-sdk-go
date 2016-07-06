@@ -1,3 +1,4 @@
+// Package ps provides methods for managing app processes.
 package ps
 
 import (
@@ -10,7 +11,7 @@ import (
 	"github.com/deis/controller-sdk-go/api"
 )
 
-// List an app's processes.
+// List lists an app's processes.
 func List(c *deis.Client, appID string, results int) ([]api.Pods, int, error) {
 	u := fmt.Sprintf("/v2/apps/%s/pods/", appID)
 	body, count, err := c.LimitedRequest(u, results)
@@ -26,7 +27,8 @@ func List(c *deis.Client, appID string, results int) ([]api.Pods, int, error) {
 	return procs, count, nil
 }
 
-// Scale an app's processes.
+// Scale increases or decreases an app's processes. The processes are specified in the target argument,
+// a key-value map, where the key is the process name and the value is the number of replicas
 func Scale(c *deis.Client, appID string, targets map[string]int) error {
 	u := fmt.Sprintf("/v2/apps/%s/scale/", appID)
 
@@ -43,7 +45,9 @@ func Scale(c *deis.Client, appID string, targets map[string]int) error {
 	return err
 }
 
-// Restart an app's processes.
+// Restart restarts an app's processes. To restart all app processes, pass empty strings for
+// procType and name. To restart an specific process, pass an procType by leave name empty.
+// To restart a specific instance, pass a procType and a name.
 func Restart(c *deis.Client, appID string, procType string, name string) ([]api.Pods, error) {
 	u := fmt.Sprintf("/v2/apps/%s/pods/", appID)
 
@@ -76,6 +80,7 @@ func Restart(c *deis.Client, appID string, procType string, name string) ([]api.
 }
 
 // ByType organizes processes of an app by process type.
+// The key will be the process name, and the array will be all the pods of that type.
 func ByType(processes []api.Pods) map[string][]api.Pods {
 	psMap := make(map[string][]api.Pods)
 
