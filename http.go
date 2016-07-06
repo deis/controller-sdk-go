@@ -21,7 +21,9 @@ func createHTTPClient(sslVerify bool) *http.Client {
 	return &http.Client{Transport: tr}
 }
 
-// Request makes a HTTP request on the controller.
+// Request makes a HTTP request with the given method, relative URL, and body on the controller.
+// It also sets the Authorization and Content-Type headers to properly authenticate and communicate
+// API. This is primarily intended to use be used by the SDK itself, but could potentially be used elsewhere.
 func (c *Client) Request(method string, path string, body []byte) (*http.Response, error) {
 	url := *c.ControllerURL
 

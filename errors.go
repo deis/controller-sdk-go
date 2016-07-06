@@ -80,6 +80,7 @@ var (
 	ErrUnprocessable = errors.New("Unable to process your request.")
 )
 
+// checkForErrors tries to match up an API error with an predefined error in the SDK.
 func checkForErrors(res *http.Response) error {
 	if res.StatusCode >= 200 && res.StatusCode < 400 {
 		return nil
