@@ -1,3 +1,4 @@
+// Package keys provides methods for managing a user's ssh keys.
 package keys
 
 import (
@@ -10,7 +11,7 @@ import (
 	"github.com/deis/controller-sdk-go/api"
 )
 
-// List keys on a controller.
+// List lists a user's ssh keys.
 func List(c *deis.Client, results int) ([]api.Key, int, error) {
 	body, count, err := c.LimitedRequest("/v2/keys/", results)
 
@@ -26,7 +27,9 @@ func List(c *deis.Client, results int) ([]api.Key, int, error) {
 	return keys, count, nil
 }
 
-// New creates a new key.
+// New adds a new ssh key for the user. This is used for authenting with the git
+// remote for the builder. This key must be unique to the current user, or the error
+// deis.ErrDuplicateKey will be returned.
 func New(c *deis.Client, id string, pubKey string) (api.Key, error) {
 	req := api.KeyCreateRequest{ID: id, Public: pubKey}
 	body, err := json.Marshal(req)
@@ -49,7 +52,8 @@ func New(c *deis.Client, id string, pubKey string) (api.Key, error) {
 	return key, nil
 }
 
-// Delete a key.
+// Delete removes a user's ssh key. The key ID will be the key comment, usually the email or user@hostname
+// of the user. The exact keyID can be retrived with List()
 func Delete(c *deis.Client, keyID string) error {
 	u := fmt.Sprintf("/v2/keys/%s", keyID)
 
