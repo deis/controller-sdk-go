@@ -1,3 +1,4 @@
+// Package auth handles user management: creation, deletion, and authentication.
 package auth
 
 import (
@@ -10,6 +11,8 @@ import (
 )
 
 // Register a new user with the controller.
+// If controller registration is set to administratiors only, a valid administrative
+// user token is required in the client.
 func Register(c *deis.Client, username, password, email string) error {
 	user := api.AuthRegisterRequest{Username: username, Password: password, Email: email}
 	body, err := json.Marshal(user)
@@ -73,7 +76,17 @@ func Delete(c *deis.Client, username string) error {
 	return err
 }
 
-// Regenerate user's auth tokens.
+// Regenerate auth tokens. This invalidates existing tokens, and if targeting a specific user
+// returns a new token.
+//
+// If username is an empty string and all is false, this regenerates the
+// client user's token and will return a new token. Make sure to update the client token
+// with this new token to avoid authentication errors.
+//
+// If username is set and all is false, this will regenerate that user's token
+// and return a new token. If not targeting yourself, regenerate requires administrative privilages.
+//
+// If all is true, this will regenerate every user's token. This requires administrative privilages.
 func Regenerate(c *deis.Client, username string, all bool) (string, error) {
 	var reqBody []byte
 	var err error
@@ -111,6 +124,11 @@ func Regenerate(c *deis.Client, username string, all bool) (string, error) {
 }
 
 // Passwd changes a user's password.
+//
+// If username if an empty string, change the password of the client's user.
+//
+// If username is set, change the password of another user and do not require
+// their password. This requires administrative privilages.
 func Passwd(c *deis.Client, username, password, newPassword string) error {
 	req := api.AuthPasswdRequest{Password: password, NewPassword: newPassword}
 
