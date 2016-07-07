@@ -22,9 +22,9 @@ TCP Socket Probe: N/A`)
 	}
 
 	h.HTTPGet = &HTTPGetProbe{
-		Path: "/",
-		Port: 80,
-		HTTPHeaders: []*KVPair{{ Key: "X-DEIS-IS", Value: "AWESOME" }},
+		Path:        "/",
+		Port:        80,
+		HTTPHeaders: []*KVPair{{Key: "X-DEIS-IS", Value: "AWESOME"}},
 	}
 
 	expected = strings.TrimSpace(`Initial Delay (seconds): 0
