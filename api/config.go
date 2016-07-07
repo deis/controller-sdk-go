@@ -18,17 +18,32 @@ type ConfigUnset struct {
 
 // Config is the structure of an app's config.
 type Config struct {
-	Owner       string                  `json:"owner,omitempty"`
-	App         string                  `json:"app,omitempty"`
-	Values      map[string]interface{}  `json:"values,omitempty"`
-	Memory      map[string]interface{}  `json:"memory,omitempty"`
-	CPU         map[string]interface{}  `json:"cpu,omitempty"`
+	// Owner is the app owner. It cannot be updated with config.Set(). See app.Transfer().
+	Owner string `json:"owner,omitempty"`
+	// App is the app name. It cannot be updated at all right now.
+	App string `json:"app,omitempty"`
+	// Values are exposed as environment variables to the app.
+	Values map[string]interface{} `json:"values,omitempty"`
+	// Memory is used to set process memory limits. The key is the process name
+	// and the value is a number followed by a memory unit (G, M, K, or B). Ex: 200G
+	Memory map[string]interface{} `json:"memory,omitempty"`
+	// CPU is used to set process CPU limits. It can be set in terms of whole CPUs
+	// (ex 1) or in milli units to reflect the number of CPU shares (ex 500m).
+	CPU map[string]interface{} `json:"cpu,omitempty"`
+	// Healthchecks are the healthchecks that the application uses.
 	Healthcheck map[string]*Healthcheck `json:"healthcheck,omitempty"`
-	Tags        map[string]interface{}  `json:"tags,omitempty"`
-	Registry    map[string]interface{}  `json:"registry,omitempty"`
-	Created     string                  `json:"created,omitempty"`
-	Updated     string                  `json:"updated,omitempty"`
-	UUID        string                  `json:"uuid,omitempty"`
+	// Tags restrict applications to run on k8s nodes with that label.
+	Tags map[string]interface{} `json:"tags,omitempty"`
+	// Registry is a key-value pair to provide authentication for docker registries.
+	// The key is the username and the value is the password.
+	Registry map[string]interface{} `json:"registry,omitempty"`
+	// Created is the time that the application was created and cannot be updated.
+	Created string `json:"created,omitempty"`
+	// Updated is the last time the configuration was changed and cannot be updated.
+	Updated string `json:"updated,omitempty"`
+	// UUID is a unique string reflecting the configuration in its current state.
+	// It changes every time the configuration is changed and cannot be updated.
+	UUID string `json:"uuid,omitempty"`
 }
 
 // Healthcheck is the structure for an application healthcheck.
@@ -56,9 +71,13 @@ Failure Threshold: {{.FailureThreshold}}
 Exec Probe: {{or .Exec "N/A"}}
 HTTP GET Probe: {{or .HTTPGet "N/A"}}
 TCP Socket Probe: {{or .TCPSocket "N/A"}}`)
-	if err != nil { panic(err) }
+	if err != nil {
+		panic(err)
+	}
 	err = tmpl.Execute(&doc, h)
-	if err != nil { panic(err) }
+	if err != nil {
+		panic(err)
+	}
 	return doc.String()
 }
 
@@ -70,7 +89,7 @@ type KVPair struct {
 }
 
 func (k KVPair) String() string {
-	return k.Key+"="+k.Value
+	return k.Key + "=" + k.Value
 }
 
 // ExecProbe executes a command within a Pod.
