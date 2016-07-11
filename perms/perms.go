@@ -13,9 +13,9 @@ import (
 
 // List users that can access an app.
 func List(c *deis.Client, appID string) ([]string, error) {
-	res, err := c.Request("GET", fmt.Sprintf("/v2/apps/%s/perms/", appID), nil)
-	if err != nil {
-		return []string{}, err
+	res, reqErr := c.Request("GET", fmt.Sprintf("/v2/apps/%s/perms/", appID), nil)
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return []string{}, reqErr
 	}
 	// Fix json.Decoder bug in <go1.7
 	defer func() {
@@ -24,11 +24,11 @@ func List(c *deis.Client, appID string) ([]string, error) {
 	}()
 
 	var users api.PermsAppResponse
-	if err = json.NewDecoder(res.Body).Decode(&users); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(&users); err != nil {
 		return []string{}, err
 	}
 
-	return users.Users, nil
+	return users.Users, reqErr
 }
 
 // ListAdmins lists deis platform administrators.

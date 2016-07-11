@@ -99,6 +99,11 @@ var (
 	DefaultUserAgent = fmt.Sprintf("Deis Go SDK V%s", APIVersion)
 )
 
+// IsErrAPIMismatch returns true if err is an ErrAPIMismatch, false otherwise
+func IsErrAPIMismatch(err error) bool {
+	return err == ErrAPIMismatch
+}
+
 // New creates a new client to communicate with the api.
 // The controllerURL is the url of the controller component, by default deis.<cluster url>.com
 // verifySSL determines whether or not to verify SSL connections.

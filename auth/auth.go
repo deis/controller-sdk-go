@@ -37,9 +37,9 @@ func Login(c *deis.Client, username, password string) (string, error) {
 		return "", err
 	}
 
-	res, err := c.Request("POST", "/v2/auth/login/", reqBody)
-	if err != nil {
-		return "", err
+	res, reqErr := c.Request("POST", "/v2/auth/login/", reqBody)
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return "", reqErr
 	}
 	// Fix json.Decoder bug in <go1.7
 	defer func() {
@@ -52,7 +52,7 @@ func Login(c *deis.Client, username, password string) (string, error) {
 		return "", err
 	}
 
-	return token.Token, nil
+	return token.Token, reqErr
 }
 
 // Delete deletes a user.
@@ -101,9 +101,9 @@ func Regenerate(c *deis.Client, username string, all bool) (string, error) {
 		return "", err
 	}
 
-	res, err := c.Request("POST", "/v2/auth/tokens/", reqBody)
-	if err != nil {
-		return "", err
+	res, reqErr := c.Request("POST", "/v2/auth/tokens/", reqBody)
+	if err != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return "", reqErr
 	}
 	// Fix json.Decoder bug in <go1.7
 	defer func() {
@@ -120,7 +120,7 @@ func Regenerate(c *deis.Client, username string, all bool) (string, error) {
 		return "", err
 	}
 
-	return token.Token, nil
+	return token.Token, reqErr
 }
 
 // Passwd changes a user's password.

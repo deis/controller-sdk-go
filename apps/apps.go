@@ -52,19 +52,19 @@ func List(c *deis.Client, results int) ([]api.App, int, error) {
 func New(c *deis.Client, appID string) (api.App, error) {
 	body := []byte{}
 
-	var err error
 	if appID != "" {
 		req := api.AppCreateRequest{ID: appID}
-		body, err = json.Marshal(req)
+		b, err := json.Marshal(req)
 
 		if err != nil {
 			return api.App{}, err
 		}
+		body = b
 	}
 
-	res, err := c.Request("POST", "/v2/apps/", body)
-	if err != nil {
-		return api.App{}, err
+	res, reqErr := c.Request("POST", "/v2/apps/", body)
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return api.App{}, reqErr
 	}
 	// Fix json.Decoder bug in <go1.7
 	defer func() {
@@ -73,23 +73,23 @@ func New(c *deis.Client, appID string) (api.App, error) {
 	}()
 
 	app := api.App{}
-	if err = json.NewDecoder(res.Body).Decode(&app); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(&app); err != nil {
 		return api.App{}, err
 	}
 
 	// Add in app URL based on controller hostname, port included
 	app.URL = fmt.Sprintf("%s.%s", app.ID, strings.TrimPrefix(c.ControllerURL.Host, workflowURLPrefix))
 
-	return app, nil
+	return app, reqErr
 }
 
 // Get app details from a controller.
 func Get(c *deis.Client, appID string) (api.App, error) {
 	u := fmt.Sprintf("/v2/apps/%s/", appID)
 
-	res, err := c.Request("GET", u, nil)
-	if err != nil {
-		return api.App{}, err
+	res, reqErr := c.Request("GET", u, nil)
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return api.App{}, reqErr
 	}
 	// Fix json.Decoder bug in <go1.7
 	defer func() {
@@ -99,14 +99,14 @@ func Get(c *deis.Client, appID string) (api.App, error) {
 
 	app := api.App{}
 
-	if err = json.NewDecoder(res.Body).Decode(&app); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(&app); err != nil {
 		return api.App{}, err
 	}
 
 	// Add in app URL based on controller hostname, port included
 	app.URL = fmt.Sprintf("%s.%s", app.ID, strings.TrimPrefix(c.ControllerURL.Host, workflowURLPrefix))
 
-	return app, nil
+	return app, reqErr
 }
 
 // Logs retrieves logs from an app. The number of log lines fetched can be set by the lines
@@ -118,8 +118,8 @@ func Logs(c *deis.Client, appID string, lines int) (string, error) {
 		u += "?log_lines=" + strconv.Itoa(lines)
 	}
 
-	res, err := c.Request("GET", u, nil)
-	if err != nil {
+	res, reqErr := c.Request("GET", u, nil)
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
 		return "", ErrNoLogs
 	}
 	defer res.Body.Close()
@@ -130,7 +130,7 @@ func Logs(c *deis.Client, appID string, lines int) (string, error) {
 	}
 
 	// We need to trim a few characters off the front and end of the string
-	return string(body[2 : len(body)-1]), nil
+	return string(body[2 : len(body)-1]), reqErr
 }
 
 // Run a one-time command in your app. This will start a kubernetes job with the
@@ -145,9 +145,9 @@ func Run(c *deis.Client, appID string, command string) (api.AppRunResponse, erro
 
 	u := fmt.Sprintf("/v2/apps/%s/run", appID)
 
-	res, err := c.Request("POST", u, body)
-	if err != nil {
-		return api.AppRunResponse{}, err
+	res, reqErr := c.Request("POST", u, body)
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return api.AppRunResponse{}, reqErr
 	}
 
 	arr := api.AppRunResponse{}
@@ -156,7 +156,7 @@ func Run(c *deis.Client, appID string, command string) (api.AppRunResponse, erro
 		return api.AppRunResponse{}, err
 	}
 
-	return arr, nil
+	return arr, reqErr
 }
 
 // Delete an app.

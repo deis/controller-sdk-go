@@ -70,10 +70,10 @@ func (c *Client) Request(method string, path string, body []byte) (*http.Respons
 
 // LimitedRequest allows limiting the number of responses in a request.
 func (c *Client) LimitedRequest(path string, results int) (string, int, error) {
-	res, err := c.Request("GET", path+"?limit="+strconv.Itoa(results), nil)
+	res, reqErr := c.Request("GET", path+"?limit="+strconv.Itoa(results), nil)
 
-	if err != nil {
-		return "", -1, err
+	if reqErr != nil && !IsErrAPIMismatch(reqErr) {
+		return "", -1, reqErr
 	}
 
 	defer res.Body.Close()
@@ -95,7 +95,7 @@ func (c *Client) LimitedRequest(path string, results int) (string, int, error) {
 		return "", -1, err
 	}
 
-	return string(out), int(r["count"].(float64)), nil
+	return string(out), int(r["count"].(float64)), reqErr
 }
 
 // CheckConnection checks that the user is connected to a network and the URL points to a valid controller.

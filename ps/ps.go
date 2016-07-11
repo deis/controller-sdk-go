@@ -61,9 +61,9 @@ func Restart(c *deis.Client, appID string, procType string, name string) ([]api.
 		}
 	}
 
-	res, err := c.Request("POST", u, nil)
-	if err != nil {
-		return []api.Pods{}, err
+	res, reqErr := c.Request("POST", u, nil)
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return []api.Pods{}, reqErr
 	}
 	// Fix json.Decoder bug in <go1.7
 	defer func() {
@@ -72,11 +72,11 @@ func Restart(c *deis.Client, appID string, procType string, name string) ([]api.
 	}()
 
 	procs := []api.Pods{}
-	if err = json.NewDecoder(res.Body).Decode(&procs); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(&procs); err != nil {
 		return []api.Pods{}, err
 	}
 
-	return procs, nil
+	return procs, reqErr
 }
 
 // ByType organizes processes of an app by process type.

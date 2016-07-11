@@ -40,9 +40,9 @@ func New(c *deis.Client, appID string, domain string) (api.Domain, error) {
 		return api.Domain{}, err
 	}
 
-	res, err := c.Request("POST", u, body)
-	if err != nil {
-		return api.Domain{}, err
+	res, reqErr := c.Request("POST", u, body)
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return api.Domain{}, reqErr
 	}
 	// Fix json.Decoder bug in <go1.7
 	defer func() {
@@ -55,7 +55,7 @@ func New(c *deis.Client, appID string, domain string) (api.Domain, error) {
 		return api.Domain{}, err
 	}
 
-	return d, nil
+	return d, reqErr
 }
 
 // Delete removes a domain from an app.

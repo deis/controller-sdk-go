@@ -15,9 +15,9 @@ import (
 func List(c *deis.Client, app string) (api.Config, error) {
 	u := fmt.Sprintf("/v2/apps/%s/config/", app)
 
-	res, err := c.Request("GET", u, nil)
-	if err != nil {
-		return api.Config{}, err
+	res, reqErr := c.Request("GET", u, nil)
+	if reqErr != nil {
+		return api.Config{}, reqErr
 	}
 	// Fix json.Decoder bug in <go1.7
 	defer func() {
@@ -26,11 +26,11 @@ func List(c *deis.Client, app string) (api.Config, error) {
 	}()
 
 	config := api.Config{}
-	if err = json.NewDecoder(res.Body).Decode(&config); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(&config); err != nil {
 		return api.Config{}, err
 	}
 
-	return config, nil
+	return config, reqErr
 }
 
 // Set sets an app's config variables and creates a new release.
@@ -53,9 +53,9 @@ func Set(c *deis.Client, app string, config api.Config) (api.Config, error) {
 
 	u := fmt.Sprintf("/v2/apps/%s/config/", app)
 
-	res, err := c.Request("POST", u, body)
-	if err != nil {
-		return api.Config{}, err
+	res, reqErr := c.Request("POST", u, body)
+	if reqErr != nil {
+		return api.Config{}, reqErr
 	}
 	// Fix json.Decoder bug in <go1.7
 	defer func() {
@@ -68,5 +68,5 @@ func Set(c *deis.Client, app string, config api.Config) (api.Config, error) {
 		return api.Config{}, err
 	}
 
-	return newConfig, nil
+	return newConfig, reqErr
 }

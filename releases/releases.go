@@ -32,9 +32,9 @@ func List(c *deis.Client, appID string, results int) ([]api.Release, int, error)
 func Get(c *deis.Client, appID string, version int) (api.Release, error) {
 	u := fmt.Sprintf("/v2/apps/%s/releases/v%d/", appID, version)
 
-	res, err := c.Request("GET", u, nil)
-	if err != nil {
-		return api.Release{}, err
+	res, reqErr := c.Request("GET", u, nil)
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return api.Release{}, reqErr
 	}
 	// Fix json.Decoder bug in <go1.7
 	defer func() {
@@ -43,11 +43,11 @@ func Get(c *deis.Client, appID string, version int) (api.Release, error) {
 	}()
 
 	release := api.Release{}
-	if err = json.NewDecoder(res.Body).Decode(&release); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(&release); err != nil {
 		return api.Release{}, err
 	}
 
-	return release, nil
+	return release, reqErr
 }
 
 // Rollback rolls back an app to a previous release.
@@ -66,9 +66,9 @@ func Rollback(c *deis.Client, appID string, version int) (int, error) {
 		}
 	}
 
-	res, err := c.Request("POST", u, reqBody)
-	if err != nil {
-		return -1, err
+	res, reqErr := c.Request("POST", u, reqBody)
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return -1, reqErr
 	}
 	// Fix json.Decoder bug in <go1.7
 	defer func() {
@@ -82,5 +82,5 @@ func Rollback(c *deis.Client, appID string, version int) (int, error) {
 		return -1, err
 	}
 
-	return response.Version, nil
+	return response.Version, reqErr
 }

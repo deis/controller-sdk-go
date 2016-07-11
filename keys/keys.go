@@ -34,9 +34,9 @@ func New(c *deis.Client, id string, pubKey string) (api.Key, error) {
 	req := api.KeyCreateRequest{ID: id, Public: pubKey}
 	body, err := json.Marshal(req)
 
-	res, err := c.Request("POST", "/v2/keys/", body)
-	if err != nil {
-		return api.Key{}, err
+	res, reqErr := c.Request("POST", "/v2/keys/", body)
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return api.Key{}, reqErr
 	}
 	// Fix json.Decoder bug in <go1.7
 	defer func() {
@@ -49,7 +49,7 @@ func New(c *deis.Client, id string, pubKey string) (api.Key, error) {
 		return api.Key{}, err
 	}
 
-	return key, nil
+	return key, reqErr
 }
 
 // Delete removes a user's ssh key. The key ID will be the key comment, usually the email or user@hostname

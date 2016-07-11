@@ -68,9 +68,9 @@ func New(c *deis.Client, appID string, image string,
 		return api.Build{}, err
 	}
 
-	res, err := c.Request("POST", u, body)
-	if err != nil {
-		return api.Build{}, err
+	res, reqErr := c.Request("POST", u, body)
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return api.Build{}, reqErr
 	}
 	// Fix json.Decoder bug in <go1.7
 	defer func() {
@@ -83,5 +83,5 @@ func New(c *deis.Client, appID string, image string,
 		return api.Build{}, err
 	}
 
-	return build, nil
+	return build, reqErr
 }

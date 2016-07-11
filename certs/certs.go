@@ -34,9 +34,9 @@ func New(c *deis.Client, cert string, key string, name string) (api.Cert, error)
 		return api.Cert{}, err
 	}
 
-	res, err := c.Request("POST", "/v2/certs/", reqBody)
-	if err != nil {
-		return api.Cert{}, err
+	res, reqErr := c.Request("POST", "/v2/certs/", reqBody)
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return api.Cert{}, reqErr
 	}
 	// Fix json.Decoder bug in <go1.7
 	defer func() {
@@ -49,15 +49,15 @@ func New(c *deis.Client, cert string, key string, name string) (api.Cert, error)
 		return api.Cert{}, err
 	}
 
-	return resCert, nil
+	return resCert, reqErr
 }
 
 // Get information for a certificate
 func Get(c *deis.Client, name string) (api.Cert, error) {
 	url := fmt.Sprintf("/v2/certs/%s", name)
-	res, err := c.Request("GET", url, nil)
-	if err != nil {
-		return api.Cert{}, err
+	res, reqErr := c.Request("GET", url, nil)
+	if reqErr != nil {
+		return api.Cert{}, reqErr
 	}
 	// Fix json.Decoder bug in <go1.7
 	defer func() {
@@ -66,11 +66,11 @@ func Get(c *deis.Client, name string) (api.Cert, error) {
 	}()
 
 	resCert := api.Cert{}
-	if err = json.NewDecoder(res.Body).Decode(&resCert); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(&resCert); err != nil {
 		return api.Cert{}, err
 	}
 
-	return resCert, nil
+	return resCert, reqErr
 }
 
 // Delete removes a cert.
