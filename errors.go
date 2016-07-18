@@ -92,11 +92,16 @@ func checkForErrors(res *http.Response) error {
 		res.Body.Close()
 	}()
 
+	out, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return unknownServerError(res.StatusCode, err.Error())
+	}
+
 	switch res.StatusCode {
 	case 400:
 		bodyMap := make(map[string]interface{})
-		if err := json.NewDecoder(res.Body).Decode(&bodyMap); err != nil {
-			return unknownError(res.StatusCode, err)
+		if err := json.Unmarshal(out, &bodyMap); err != nil {
+			return unknownServerError(res.StatusCode, fmt.Sprintf("error decoding json response (%s): %s", err, string(out)))
 		}
 
 		if scanResponse(bodyMap, "username", []string{fieldReqMsg, invalidUserMsg}, true) {
@@ -166,8 +171,7 @@ func checkForErrors(res *http.Response) error {
 				return ErrTagNotFound
 			}
 		}
-
-		return unknownError(res.StatusCode, bodyMap)
+		return unknownServerError(res.StatusCode, string(out))
 	case 401:
 		return ErrUnauthorized
 	case 403:
@@ -183,11 +187,7 @@ func checkForErrors(res *http.Response) error {
 	case 500:
 		return ErrServerError
 	default:
-		out, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			return unknownError(res.StatusCode, err)
-		}
-		return unknownError(res.StatusCode, out)
+		return unknownServerError(res.StatusCode, string(out))
 	}
 }
 
@@ -224,8 +224,8 @@ func arrayContains(search string, completeMatch bool, array []string) bool {
 	return false
 }
 
-func unknownError(sc int, k interface{}) error {
-	return fmt.Errorf(formatErrUnknown, sc, k)
+func unknownServerError(statusCode int, message string) error {
+	return fmt.Errorf(formatErrUnknown, statusCode, message)
 }
 
 func scanResponse(

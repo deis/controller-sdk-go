@@ -2,6 +2,7 @@ package deis
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"testing"
@@ -257,12 +258,21 @@ func TestErrors(t *testing.T) {
 			},
 			expected: ErrServerError,
 		},
+		// ensure unknown errors at least look pretty
+		errorTest{
+			res: &http.Response{
+				StatusCode: 400,
+				Body:       readCloser(`{"detail":"unknown error"}`),
+			},
+			expected: errors.New(`Unknown Error (400): {"detail":"unknown error"}`),
+		},
 	}
 
 	for _, check := range tests {
 		actual := checkForErrors(check.res)
 
-		if actual != check.expected {
+		// specifically check error output rather than value comparison
+		if fmt.Sprintf("%v", actual) != fmt.Sprintf("%v", check.expected) {
 			t.Errorf(failureMessage, check.expected, actual)
 		}
 	}
