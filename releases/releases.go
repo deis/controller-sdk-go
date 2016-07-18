@@ -1,3 +1,4 @@
+// Package releases provides methods for managing app releases.
 package releases
 
 import (
@@ -28,7 +29,7 @@ func List(c *deis.Client, appID string, results int) ([]api.Release, int, error)
 	return releases, count, nil
 }
 
-// Get a release of an app.
+// Get retrieves a release of an app.
 func Get(c *deis.Client, appID string, version int) (api.Release, error) {
 	u := fmt.Sprintf("/v2/apps/%s/releases/v%d/", appID, version)
 
@@ -50,7 +51,8 @@ func Get(c *deis.Client, appID string, version int) (api.Release, error) {
 	return release, reqErr
 }
 
-// Rollback rolls back an app to a previous release.
+// Rollback rolls back an app to a previous release. If version is -1, this rolls back to
+// the previous release. Otherwise, roll back to the specified version.
 func Rollback(c *deis.Client, appID string, version int) (int, error) {
 	u := fmt.Sprintf("/v2/apps/%s/releases/rollback/", appID)
 
