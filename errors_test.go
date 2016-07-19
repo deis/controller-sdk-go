@@ -135,6 +135,13 @@ func TestErrors(t *testing.T) {
 		{
 			res: &http.Response{
 				StatusCode: 400,
+				Body:       readCloser(`{"key": ["Public Key is already in use"]}`),
+			},
+			expected: ErrDuplicateKey,
+		},
+		{
+			res: &http.Response{
+				StatusCode: 400,
 				Body:       readCloser(`{"public":["Key contains invalid base64 chars"]}`),
 			},
 			expected: ErrMissingKey,
@@ -173,6 +180,13 @@ func TestErrors(t *testing.T) {
 				Body:       readCloser(`{"domain":["Hostname does not look valid."]}`),
 			},
 			expected: ErrInvalidDomain,
+		},
+		{
+			res: &http.Response{
+				StatusCode: 400,
+				Body:       readCloser(`{"domain":["Domain is already in use by another application"]}`),
+			},
+			expected: ErrDuplicateDomain,
 		},
 		{
 			res: &http.Response{
@@ -240,9 +254,9 @@ func TestErrors(t *testing.T) {
 		{
 			res: &http.Response{
 				StatusCode: 409,
-				Body:       readCloser(""),
+				Body:       readCloser(`{"detail":"foo still has applications assigned. Delete or transfer ownership"}`),
 			},
-			expected: ErrConflict,
+			expected: ErrCancellationFailed,
 		},
 		{
 			res: &http.Response{

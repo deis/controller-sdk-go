@@ -13,21 +13,26 @@ import (
 const (
 	// formatErrUnknown is used to create an dynamic error if no error matches
 	formatErrUnknown = "Unknown Error (%d): %s"
+	jsonParsingError = "error decoding json response (%s): %s"
+
 	// fieldReqMsg is API error stating a field is required.
-	fieldReqMsg       = "This field is required."
-	invalidUserMsg    = "Enter a valid username. This value may contain only letters, numbers and @/./+/-/_ characters."
-	failedLoginMsg    = "Unable to log in with provided credentials."
-	invalidAppNameMsg = "App name can only contain a-z (lowercase), 0-9 and hyphens"
-	invalidNameMsg    = "Can only contain a-z (lowercase), 0-9 and hyphens"
-	invalidCertMsg    = "Could not load certificate"
-	invalidPodMsg     = "does not exist in application"
-	invalidDomainMsg  = "Hostname does not look valid."
-	invalidVersionMsg = "version cannot be below 0"
-	invalidKeyMsg     = "Key contains invalid base64 chars"
-	duplicateUserMsg  = "A user with that username already exists."
-	invalidEmailMsg   = "Enter a valid email address."
-	invalidTagMsg     = "No nodes matched the provided labels"
-	duplicateIDMsg    = "App with this id already exists."
+	fieldReqMsg           = "This field is required."
+	invalidUserMsg        = "Enter a valid username. This value may contain only letters, numbers and @/./+/-/_ characters."
+	failedLoginMsg        = "Unable to log in with provided credentials."
+	invalidAppNameMsg     = "App name can only contain a-z (lowercase), 0-9 and hyphens"
+	invalidNameMsg        = "Can only contain a-z (lowercase), 0-9 and hyphens"
+	invalidCertMsg        = "Could not load certificate"
+	invalidPodMsg         = "does not exist in application"
+	invalidDomainMsg      = "Hostname does not look valid."
+	invalidVersionMsg     = "version cannot be below 0"
+	invalidKeyMsg         = "Key contains invalid base64 chars"
+	duplicateUserMsg      = "A user with that username already exists."
+	invalidEmailMsg       = "Enter a valid email address."
+	invalidTagMsg         = "No nodes matched the provided labels"
+	duplicateIDMsg        = "App with this id already exists."
+	cancellationFailedMsg = "still has applications assigned. Delete or transfer ownership"
+	duplicateDomainMsg    = "Domain is already in use by another application"
+	duplicateKeyMsg       = "Public Key is already in use"
 )
 
 var (
@@ -56,6 +61,8 @@ var (
 	ErrForbidden = errors.New("You do not have permission to perform this action.")
 	// ErrMissingKey is returned when a key is not sent with the request.
 	ErrMissingKey = errors.New("A key is required")
+	// ErrDuplicateKey is returned when adding a key that already exists.
+	ErrDuplicateKey = errors.New(duplicateKeyMsg)
 	// ErrInvalidName is returned when a name is invalid or missing.
 	ErrInvalidName = errors.New(invalidNameMsg)
 	// ErrInvalidCertificate is returned when a certififate is missing or invalid
@@ -64,6 +71,8 @@ var (
 	ErrPodNotFound = errors.New("Pod not found in application")
 	// ErrInvalidDomain is returned when a domain is missing or invalid
 	ErrInvalidDomain = errors.New(invalidDomainMsg)
+	// ErrDuplicateDomain is returned adding domain that is already in use
+	ErrDuplicateDomain = errors.New(duplicateDomainMsg)
 	// ErrInvalidImage is returned when a image is missing or invalid
 	ErrInvalidImage = errors.New("The given image is invalid")
 	// ErrInvalidVersion is returned when a version is invalid
@@ -78,6 +87,8 @@ var (
 	ErrDuplicateApp = errors.New(duplicateIDMsg)
 	// ErrUnprocessable is returned when the controller throws a 422.
 	ErrUnprocessable = errors.New("Unable to process your request.")
+	// ErrCancellationFailed is returned when cancelling a user fails.
+	ErrCancellationFailed = errors.New("Failed to delete user because the user still has applications assigned. Delete or transfer ownership.")
 )
 
 // checkForErrors tries to match up an API error with an predefined error in the SDK.
@@ -101,7 +112,7 @@ func checkForErrors(res *http.Response) error {
 	case 400:
 		bodyMap := make(map[string]interface{})
 		if err := json.Unmarshal(out, &bodyMap); err != nil {
-			return unknownServerError(res.StatusCode, fmt.Sprintf("error decoding json response (%s): %s", err, string(out)))
+			return unknownServerError(res.StatusCode, fmt.Sprintf(jsonParsingError, err, string(out)))
 		}
 
 		if scanResponse(bodyMap, "username", []string{fieldReqMsg, invalidUserMsg}, true) {
@@ -132,6 +143,10 @@ func checkForErrors(res *http.Response) error {
 			return ErrMissingKey
 		}
 
+		if scanResponse(bodyMap, "key", []string{duplicateKeyMsg}, true) {
+			return ErrDuplicateKey
+		}
+
 		if scanResponse(bodyMap, "public", []string{fieldReqMsg, invalidKeyMsg}, true) {
 			return ErrMissingKey
 		}
@@ -146,6 +161,10 @@ func checkForErrors(res *http.Response) error {
 
 		if scanResponse(bodyMap, "domain", []string{invalidDomainMsg}, true) {
 			return ErrInvalidDomain
+		}
+
+		if scanResponse(bodyMap, "domain", []string{duplicateDomainMsg}, true) {
+			return ErrDuplicateDomain
 		}
 
 		if scanResponse(bodyMap, "image", []string{fieldReqMsg}, true) {
@@ -181,7 +200,16 @@ func checkForErrors(res *http.Response) error {
 	case 405:
 		return ErrMethodNotAllowed
 	case 409:
-		return ErrConflict
+		bodyMap := make(map[string]interface{})
+		if err := json.Unmarshal(out, &bodyMap); err != nil {
+			return unknownServerError(res.StatusCode, fmt.Sprintf(jsonParsingError, err, string(out)))
+		}
+		if v, ok := bodyMap["detail"].(string); ok {
+			if strings.Contains(v, cancellationFailedMsg) {
+				return ErrCancellationFailed
+			}
+		}
+		return unknownServerError(res.StatusCode, string(out))
 	case 422:
 		return ErrUnprocessable
 	case 500:

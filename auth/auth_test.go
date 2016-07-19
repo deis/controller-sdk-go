@@ -133,7 +133,7 @@ func (f *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		if string(body) == cancelAdminExpected && !f.cancelUsername {
 			f.cancelUsername = true
 			res.WriteHeader(http.StatusConflict)
-			res.Write(nil)
+			res.Write([]byte(`{"detail":"foo still has applications assigned. Delete or transfer ownership"}`))
 			return
 		} else if string(body) == cancelUserExpected && !f.cancelUsername {
 			f.cancelUsername = true
@@ -253,7 +253,7 @@ func TestDeleteUserApp(t *testing.T) {
 	err = Delete(d, "admin")
 	// should be a 409 Conflict
 
-	if err != deis.ErrConflict {
+	if err != deis.ErrCancellationFailed {
 		t.Errorf("got '%s' but expected '%s'", err, deis.ErrConflict)
 	}
 }
