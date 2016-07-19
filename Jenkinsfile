@@ -43,7 +43,7 @@ node('linux') {
 	}
 }
 
-def actual_commit = ''
+def git_commit = ''
 def git_branch = ''
 def go_repo = ''
 
@@ -58,26 +58,28 @@ node('linux') {
 
 		// HACK: Recommended approach for getting command output is writing to and then reading a file.
 		sh 'mkdir -p tmp'
-		sh 'go list . > tmp/GO_LIST'
-		// HACK: Jump hurdle to get at actual PR commit rather than merge commit
-		sh 'git rev-parse HEAD | git log --pretty=%P -n 1 | cut -c1-40 > tmp/ACTUAL_COMMIT'
 		sh 'git describe --all > tmp/GIT_BRANCH'
-		go_list = readFile('tmp/GO_LIST').trim()
-		actual_commit = readFile('tmp/ACTUAL_COMMIT').trim()
+		sh 'git rev-parse HEAD > tmp/GIT_COMMIT'
+		sh 'go list . > tmp/GO_LIST'
 		git_branch = readFile('tmp/GIT_BRANCH').trim()
-		// convert 'github.com/deis/controller-sdk-go' to 'github.com/${env.CHANGE_AUTHOR}/controller-sdk-go'
-		go_repo = go_list.replace('deis', env.CHANGE_AUTHOR)
+		git_commit = readFile('tmp/GIT_COMMIT').trim()
+		go_repo = readFile('tmp/GO_LIST').trim()
+
+		if (git_branch != "remotes/origin/master") {
+			// HACK: get actual PR commit (https://github.com/deis/controller-sdk-go/issues/45)
+			sh 'git rev-parse HEAD | git log --pretty=%P -n 1 | cut -c1-40 > tmp/ACTUAL_COMMIT'
+			git_commit = readFile('tmp/ACTUAL_COMMIT').trim()
+			// convert 'github.com/deis/controller-sdk-go' to 'github.com/${env.CHANGE_AUTHOR}/controller-sdk-go'
+			go_repo = go_repo.replace('deis', env.CHANGE_AUTHOR)
+		}
 	}
 }
 
 stage 'Trigger workflow-cli pipeline with this repo and sha'
 
-def parameters = []
-if (git_branch != "remotes/origin/master") {
-	echo "Passing down SDK_SHA='${actual_commit}' and SDK_GO_REPO='${go_repo}' to the Deis/workflow-cli job..."
-	parameters = [
-		[$class: 'StringParameterValue', name: 'SDK_SHA', value: actual_commit],
-		[$class: 'StringParameterValue', name: 'SDK_GO_REPO', value: go_repo]]
-}
+echo "Passing down SDK_SHA='${git_commit}' and SDK_GO_REPO='${go_repo}' to the Deis/workflow-cli job..."
+parameters = [
+	[$class: 'StringParameterValue', name: 'SDK_SHA', value: git_commit],
+	[$class: 'StringParameterValue', name: 'SDK_GO_REPO', value: go_repo]]
 
 build job: 'Deis/workflow-cli/master', parameters: parameters
