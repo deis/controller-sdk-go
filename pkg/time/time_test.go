@@ -1,9 +1,6 @@
 package time
 
-import (
-	"fmt"
-	"testing"
-)
+import "testing"
 
 func TestUnMarshalText(t *testing.T) {
 	dummyTime := Time{}
@@ -19,7 +16,7 @@ func TestUnMarshalText(t *testing.T) {
 			t.Error("expected " + goodTime + " to be marshal-able.")
 		}
 		if dummyTime.Year() != 2006 {
-			t.Error(fmt.Sprintf("expected year to be 2006; got %d.", dummyTime.Year()))
+			t.Errorf("expected year to be 2006; got %d.", dummyTime.Year())
 		}
 	}
 
@@ -34,7 +31,7 @@ func TestUnMarshalText(t *testing.T) {
 			t.Error("expected " + goodTime + " to be marshal-able.")
 		}
 		if dummyTime.Year() != 2007 {
-			t.Error(fmt.Sprintf("expected year to be 2007; got %d.", dummyTime.Year()))
+			t.Errorf("expected year to be 2007; got %d.", dummyTime.Year())
 		}
 	}
 

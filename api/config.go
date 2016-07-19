@@ -74,8 +74,7 @@ TCP Socket Probe: {{or .TCPSocket "N/A"}}`)
 	if err != nil {
 		panic(err)
 	}
-	err = tmpl.Execute(&doc, h)
-	if err != nil {
+	if err := tmpl.Execute(&doc, h); err != nil {
 		panic(err)
 	}
 	return doc.String()
