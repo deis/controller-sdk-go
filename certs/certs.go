@@ -1,3 +1,4 @@
+// Package certs manages SSL keys and certificates on the deis platform
 package certs
 
 import (
@@ -10,7 +11,7 @@ import (
 	"github.com/deis/controller-sdk-go/api"
 )
 
-// List certs registered with the controller.
+// List lists certificates added to deis.
 func List(c *deis.Client, results int) ([]api.Cert, int, error) {
 	body, count, err := c.LimitedRequest("/v2/certs/", results)
 
@@ -26,7 +27,10 @@ func List(c *deis.Client, results int) ([]api.Cert, int, error) {
 	return res, count, nil
 }
 
-// New creates a cert.
+// New creates a new certificate.
+// Certificates are created independently from apps and are applied on a per domain basis.
+// So to enable SSL for an app with the domain test.com, you would first create the certificate,
+// then use the attach method to attach test.com to the certificate.
 func New(c *deis.Client, cert string, key string, name string) (api.Cert, error) {
 	req := api.CertCreateRequest{Certificate: cert, Key: key, Name: name}
 	reqBody, err := json.Marshal(req)
@@ -52,7 +56,7 @@ func New(c *deis.Client, cert string, key string, name string) (api.Cert, error)
 	return resCert, reqErr
 }
 
-// Get information for a certificate
+// Get retrieves information about a certificate
 func Get(c *deis.Client, name string) (api.Cert, error) {
 	url := fmt.Sprintf("/v2/certs/%s", name)
 	res, reqErr := c.Request("GET", url, nil)
@@ -73,7 +77,7 @@ func Get(c *deis.Client, name string) (api.Cert, error) {
 	return resCert, reqErr
 }
 
-// Delete removes a cert.
+// Delete removes a certificate.
 func Delete(c *deis.Client, name string) error {
 	url := fmt.Sprintf("/v2/certs/%s", name)
 	res, err := c.Request("DELETE", url, nil)
@@ -83,7 +87,7 @@ func Delete(c *deis.Client, name string) error {
 	return err
 }
 
-// Attach a certificate to a domain
+// Attach adds a domain to a certificate.
 func Attach(c *deis.Client, name string, domain string) error {
 	req := api.CertAttachRequest{Domain: domain}
 	reqBody, err := json.Marshal(req)
@@ -99,7 +103,7 @@ func Attach(c *deis.Client, name string, domain string) error {
 	return err
 }
 
-// Detach a certificate from a domain
+// Detach removes a domain from a certificate.
 func Detach(c *deis.Client, name string, domain string) error {
 	url := fmt.Sprintf("/v2/certs/%s/domain/%s", name, domain)
 	res, err := c.Request("DELETE", url, nil)
