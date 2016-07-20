@@ -1,4 +1,4 @@
-def workpath_linux = "/src/github.com/deis/controller-sdk-go"
+def workpath_linux_root = "/src/github.com/deis"
 
 def gopath_linux = {
 	def gopath = pwd() + "/gopath"
@@ -6,8 +6,8 @@ def gopath_linux = {
 	gopath
 }
 
-def workdir_linux = { String gopath ->
-	gopath + workpath_linux
+def workdir_linux = { String gopath, dest ->
+	gopath + workpath_linux_root + "/" + dest
 }
 
 node('windows') {
@@ -31,7 +31,7 @@ node('windows') {
 
 node('linux') {
 	def gopath = gopath_linux()
-	def workdir = workdir_linux(gopath)
+	def workdir = workdir_linux(gopath, "controller-sdk-go")
 
 	dir(workdir) {
 		stage 'Checkout Linux'
@@ -51,7 +51,7 @@ stage 'Go & Git Info'
 node('linux') {
 
 	def gopath = gopath_linux()
-	def workdir = workdir_linux(gopath)
+	def workdir = workdir_linux(gopath, "controller-sdk-go")
 
 	dir(workdir) {
 		checkout scm
@@ -75,11 +75,65 @@ node('linux') {
 	}
 }
 
-stage 'Trigger workflow-cli pipeline with this repo and sha'
+stage 'Checkout workflow-cli repo and build/deploy with appropriate updates'
+node('linux') {
+	def repo = "workflow-cli"
+	def gopath = gopath_linux()
+	def workdir = workdir_linux(gopath, repo)
 
-echo "Passing down SDK_SHA='${git_commit}' and SDK_GO_REPO='${go_repo}' to the Deis/workflow-cli job..."
-parameters = [
-	[$class: 'StringParameterValue', name: 'SDK_SHA', value: git_commit],
-	[$class: 'StringParameterValue', name: 'SDK_GO_REPO', value: go_repo]]
+	// vars/closures around uploading artifacts to gcs
+	def keyfile = "tmp/key.json"
 
-build job: 'Deis/workflow-cli/master', parameters: parameters
+	def getBasePath = { String filepath ->
+		def filename = filepath.lastIndexOf(File.separator)
+		return filepath.substring(0, filename)
+	}
+
+	def upload_artifacts = { String filepath ->
+		withCredentials([[$class: 'FileBinding', credentialsId: 'e80fd033-dd76-4d96-be79-6c272726fb82', variable: 'GCSKEY']]) {
+			sh "mkdir -p ${getBasePath(filepath)}"
+			sh "cat \"\${GCSKEY}\" > ${filepath}"
+			sh "make upload-gcs"
+		}
+	}
+
+	dir(workdir) {
+		stage "Checkout ${repo}"
+		git url: "https://github.com/deis/${repo}.git", branch: "master"
+
+		stage "Build ${repo}"
+		if (git_branch != "remotes/origin/master") {
+			echo "Skipping build of 386 binaries to shorten CI for Pull Requests"
+			env.BUILD_ARCH = "amd64"
+		}
+		sh 'make bootstrap'
+
+		stage "Update local glide.yaml with controller-sdk-go repo '${go_repo}' and version '${git_commit}'"
+
+		def pattern = "github\\.com\\/deis\\/controller-sdk-go\\n\\s+version:\\s+[a-f0-9]+"
+		def replacement = "${go_repo.replace("/", "\\/")}\\n  version: ${git_commit}"
+		sh "perl -i -0pe 's/${pattern}/${replacement}/' glide.yaml"
+
+		def glideYaml = readFile('glide.yaml')
+		echo "Updated glide.yaml:\n${glideYaml}"
+
+		sh 'make glideup'
+		sh "VERSION=${git_commit.take(7)} make build-revision"
+
+		stage "Deploy ${repo}"
+		upload_artifacts(keyfile)
+	}
+}
+
+stage 'Trigger e2e tests'
+// If build is on master, trigger workflow-test, otherwise, assume build is a PR and trigger workflow-test-pr
+waitUntil {
+	try {
+		def downstreamJob = git_branch == "remotes/origin/master" ? '/workflow-test' : '/workflow-test-pr'
+		build job: downstreamJob, parameters: [[$class: 'StringParameterValue', name: 'WORKFLOW_CLI_SHA', value: git_commit]]
+		true
+	} catch(error) {
+		 input "Retry the e2e tests?"
+		 false
+	}
+}
