@@ -133,7 +133,25 @@ waitUntil {
 		build job: downstreamJob, parameters: [[$class: 'StringParameterValue', name: 'WORKFLOW_CLI_SHA', value: git_commit]]
 		true
 	} catch(error) {
-		 input "Retry the e2e tests?"
-		 false
+			node('linux') {
+				withCredentials([[$class: 'StringBinding', credentialsId: '8a727911-596f-4057-97c2-b9e23de5268d', variable: 'SLACKEMAIL']]) {
+					mail body: """<!DOCTYPE html>
+<html>
+<head>
+<meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+</head>
+<body>
+<div>Author: ${env.CHANGE_AUTHOR}<br/>
+Branch: ${env.BRANCH_NAME}<br/>
+Commit: ${env.CHANGE_TITLE}<br/>
+<p><a href="${env.BUILD_URL}console/">Click here</a> to view build logs.</p>
+<p><a href="${env.BUILD_URL}input/">Click here</a> to restart e2e.</p>
+</div>
+</html>
+""", from: 'jenkins@ci.deis.io', subject: 'Controller-sdk-go E2E Test Failure', to: env.SLACKEMAIL, mimeType: 'text/html'
+				}
+			}
+			input "Retry the e2e tests?"
+			false
 	}
 }
