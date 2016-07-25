@@ -148,3 +148,22 @@ func Passwd(c *deis.Client, username, password, newPassword string) error {
 	}
 	return err
 }
+
+func Whoami(c *deis.Client) (api.User, error) {
+	res, err := c.Request("GET", "/v2/auth/whoami/", nil)
+	if err != nil {
+		return api.User{}, err
+	}
+	// Fix json.Decoder bug in <go1.7
+	defer func() {
+		io.Copy(ioutil.Discard, res.Body)
+		res.Body.Close()
+	}()
+
+	resUser := api.User{}
+	if err = json.NewDecoder(res.Body).Decode(&resUser); err != nil {
+		return api.User{}, err
+	}
+
+	return resUser, nil
+}
