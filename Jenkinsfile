@@ -66,9 +66,18 @@ node('linux') {
 		go_repo = readFile('tmp/GO_LIST').trim()
 
 		if (git_branch != "remotes/origin/master") {
-			// HACK: get actual PR commit (https://github.com/deis/controller-sdk-go/issues/45)
-			sh 'git rev-parse HEAD | git log --pretty=%P -n 1 | cut -c1-40 > tmp/ACTUAL_COMMIT'
-			git_commit = readFile('tmp/ACTUAL_COMMIT').trim()
+			// Determine actual PR commit, if necessary
+			sh 'git rev-parse HEAD | git log --pretty=%P -n 1 --date-order > tmp/MERGE_COMMIT_PARENTS'
+			sh 'cat tmp/MERGE_COMMIT_PARENTS'
+			merge_commit_parents = readFile('tmp/MERGE_COMMIT_PARENTS').trim()
+			if (merge_commit_parents.length() > 40) {
+				echo 'More than one merge commit parent signifies that the merge commit is not the PR commit'
+				echo "Changing git_commit from '${git_commit}' to '${merge_commit_parents.take(40)}'"
+				git_commit = merge_commit_parents.take(40)
+			} else {
+				echo 'Only one merge commit parent signifies that the merge commit is also the PR commit'
+				echo "Keeping git_commit as '${git_commit}'"
+			}
 			// convert 'github.com/deis/controller-sdk-go' to 'github.com/${env.CHANGE_AUTHOR}/controller-sdk-go'
 			go_repo = go_repo.replace('deis', env.CHANGE_AUTHOR)
 		}
