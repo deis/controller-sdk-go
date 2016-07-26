@@ -143,8 +143,9 @@ waitUntil {
 		true
 	} catch(error) {
 			node('linux') {
-				withCredentials([[$class: 'StringBinding', credentialsId: '8a727911-596f-4057-97c2-b9e23de5268d', variable: 'SLACKEMAIL']]) {
-					mail body: """<!DOCTYPE html>
+				if (git_branch != "remotes/origin/master") {
+					withCredentials([[$class: 'StringBinding', credentialsId: '8a727911-596f-4057-97c2-b9e23de5268d', variable: 'SLACKEMAIL']]) {
+						mail body: """<!DOCTYPE html>
 <html>
 <head>
 <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
@@ -158,9 +159,10 @@ Commit: ${env.CHANGE_TITLE}<br/>
 </div>
 </html>
 """, from: 'jenkins@ci.deis.io', subject: 'Controller-sdk-go E2E Test Failure', to: env.SLACKEMAIL, mimeType: 'text/html'
+					}
+					input "Retry the e2e tests?"
 				}
 			}
-			input "Retry the e2e tests?"
-			false
+		false
 	}
 }
