@@ -15,6 +15,11 @@ GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 GOFMT = gofmtresult=$$(gofmt -e -l -s ${GO_FILES} ${GO_PACKAGES}); if [[ -n $$gofmtresult ]]; then echo "gofmt errors found in the following files: $${gofmtresult}"; false; fi;
 GOTEST = go test --cover --race -v
 
+# UID and GID of local user
+UID := $(shell id -u)
+GID := $(shell id -g)
+
+
 bootstrap:
 	${DEV_ENV_CMD} glide install
 
@@ -37,3 +42,7 @@ test-style:
 
 test-unit:
 	${DEV_ENV_PREFIX_CGO_ENABLED} ${DEV_ENV_IMAGE} sh -c '${GOTEST} $$(glide nv)'
+
+# Set local user as owner for files
+fileperms:
+	${DEV_ENV_PREFIX_CGO_ENABLED} ${DEV_ENV_IMAGE} chown -R ${UID}:${GID} .

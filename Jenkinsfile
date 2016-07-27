@@ -1,5 +1,14 @@
 def workpath_linux_root = "/src/github.com/deis"
 
+def make = { String target ->
+	try {
+		sh "make ${target} fileperms"
+	} catch(error) {
+		sh 'make fileperms'
+		false
+	}
+}
+
 def gopath_linux = {
 	def gopath = pwd() + "/gopath"
 	env.GOPATH = gopath
@@ -37,9 +46,9 @@ node('linux') {
 		stage 'Checkout Linux'
 			checkout scm
 		stage 'Install Linux'
-			sh 'make bootstrap'
+			make 'bootstrap'
 		stage 'Test Linux'
-			sh 'make test'
+			make 'test'
 	}
 }
 
@@ -102,7 +111,7 @@ node('linux') {
 		withCredentials([[$class: 'FileBinding', credentialsId: 'e80fd033-dd76-4d96-be79-6c272726fb82', variable: 'GCSKEY']]) {
 			sh "mkdir -p ${getBasePath(filepath)}"
 			sh "cat \"\${GCSKEY}\" > ${filepath}"
-			sh "make upload-gcs"
+			make 'upload-gcs'
 		}
 	}
 
@@ -115,7 +124,7 @@ node('linux') {
 			echo "Skipping build of 386 binaries to shorten CI for Pull Requests"
 			env.BUILD_ARCH = "amd64"
 		}
-		sh 'make bootstrap'
+		make 'bootstrap'
 
 		stage "Update local glide.yaml with controller-sdk-go repo '${go_repo}' and version '${git_commit}'"
 
@@ -126,7 +135,7 @@ node('linux') {
 		def glideYaml = readFile('glide.yaml')
 		echo "Updated glide.yaml:\n${glideYaml}"
 
-		sh 'make glideup'
+		make 'glideup'
 		sh "VERSION=${git_commit.take(7)} make build-revision"
 
 		stage "Deploy ${repo}"
