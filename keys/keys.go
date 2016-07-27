@@ -12,7 +12,7 @@ import (
 )
 
 // List lists a user's ssh keys.
-func List(c *deis.Client, results int) ([]api.Key, int, error) {
+func List(c *deis.Client, results int) (api.Keys, int, error) {
 	body, count, err := c.LimitedRequest("/v2/keys/", results)
 
 	if err != nil {

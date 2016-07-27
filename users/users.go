@@ -8,7 +8,7 @@ import (
 )
 
 // List users registered with the controller.
-func List(c *deis.Client, results int) ([]api.User, int, error) {
+func List(c *deis.Client, results int) (api.Users, int, error) {
 	body, count, err := c.LimitedRequest("/v2/users/", results)
 
 	if err != nil {

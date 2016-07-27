@@ -279,7 +279,7 @@ func TestAppsList(t *testing.T) {
 
 	u, _ := url.Parse(server.URL)
 
-	expected := []api.App{
+	expected := api.Apps{
 		{
 			ID:      "example-go",
 			Created: "2014-01-01T00:00:00UTC",

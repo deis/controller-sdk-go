@@ -86,7 +86,7 @@ func (fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 func TestKeysList(t *testing.T) {
 	t.Parallel()
 
-	expected := []api.Key{
+	expected := api.Keys{
 		{
 			Created: "2014-01-01T00:00:00UTC",
 			ID:      "test@example.com",

@@ -25,7 +25,7 @@ var ErrNoLogs = errors.New(
 3a) If the above command returns saying /var/log/containers cannot be found then please see the following github issue for a workaround: https://github.com/deis/logger/issues/50`)
 
 // List lists apps on a Deis controller.
-func List(c *deis.Client, results int) ([]api.App, int, error) {
+func List(c *deis.Client, results int) (api.Apps, int, error) {
 	body, count, err := c.LimitedRequest("/v2/apps/", results)
 
 	if err != nil {

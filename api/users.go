@@ -33,3 +33,9 @@ Date Joined: %s`
 	return fmt.Sprintf(tpl, u.ID, u.Username, u.Email, u.FirstName, u.LastName, u.LastLogin,
 		u.IsSuperuser, u.IsStaff, u.IsActive, u.DateJoined)
 }
+
+type Users []User
+
+func (u Users) Len() int           { return len(u) }
+func (u Users) Swap(i, j int)      { u[i], u[j] = u[j], u[i] }
+func (u Users) Less(i, j int) bool { return u[i].Username < u[j].Username }

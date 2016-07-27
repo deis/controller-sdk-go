@@ -52,7 +52,7 @@ func (fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 func TestUsersList(t *testing.T) {
 	t.Parallel()
 
-	expected := []api.User{
+	expected := api.Users{
 		{
 			ID:          1,
 			LastLogin:   "2014-10-19T22:01:00.601Z",
