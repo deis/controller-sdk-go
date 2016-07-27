@@ -30,8 +30,8 @@ type Config struct {
 	// CPU is used to set process CPU limits. It can be set in terms of whole CPUs
 	// (ex 1) or in milli units to reflect the number of CPU shares (ex 500m).
 	CPU map[string]interface{} `json:"cpu,omitempty"`
-	// Healthchecks are the healthchecks that the application uses.
-	Healthcheck map[string]*Healthcheck `json:"healthcheck,omitempty"`
+	// Healthcheck is map of healthchecks for each process that the application uses.
+	Healthcheck map[string]*Healthchecks `json:"healthcheck,omitempty"`
 	// Tags restrict applications to run on k8s nodes with that label.
 	Tags map[string]interface{} `json:"tags,omitempty"`
 	// Registry is a key-value pair to provide authentication for docker registries.
@@ -53,6 +53,10 @@ type ConfigHookRequest struct {
 	User string `json:"receive_user"`
 	App  string `json:"receive_repo"`
 }
+
+// Healthchecks is a map of healthcheck probes.
+// The valid values are "livenessProbe" and "readinessProbe".
+type Healthchecks map[string]*Healthcheck
 
 // Healthcheck is the structure for an application healthcheck.
 // Healthchecks only need to provide information about themselves.
