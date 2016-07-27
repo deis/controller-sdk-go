@@ -61,8 +61,9 @@ func (c *Client) Request(method string, path string, body []byte) (*http.Respons
 
 	apiVersion := res.Header.Get("DEIS_API_VERSION")
 
-	// Update controller api version
+	// Update controller api and platform version
 	c.ControllerAPIVersion = apiVersion
+	c.DeisVersion = res.Header.Get("DEIS_PLATFORM_VERSION")
 
 	// Return results along with api compatibility error
 	return res, checkAPICompatibility(apiVersion)

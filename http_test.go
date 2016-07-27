@@ -9,7 +9,8 @@ import (
 )
 
 type fakeHTTPServer struct {
-	Version string
+	Version         string
+	PlatformVersion string
 }
 
 const limitedFixture string = `
@@ -30,6 +31,7 @@ const limitedFixture string = `
 
 func (f fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	res.Header().Add("DEIS_API_VERSION", f.Version)
+	res.Header().Add("DEIS_PLATFORM_VERSION", f.PlatformVersion)
 
 	eA := "test"
 
@@ -136,7 +138,7 @@ func TestAPIMistmatch(t *testing.T) {
 func TestBasicRequest(t *testing.T) {
 	t.Parallel()
 
-	handler := fakeHTTPServer{Version: APIVersion}
+	handler := fakeHTTPServer{Version: APIVersion, PlatformVersion: "v9000"}
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
@@ -160,6 +162,10 @@ func TestBasicRequest(t *testing.T) {
 
 	if deis.ControllerAPIVersion != handler.Version {
 		t.Errorf("Expected %s, Got %s", handler.Version, deis.ControllerAPIVersion)
+	}
+
+	if deis.DeisVersion != handler.PlatformVersion {
+		t.Errorf("Expected %s, Got %s", handler.PlatformVersion, deis.DeisVersion)
 	}
 
 	// Make sure the request doesn't modify the URL
