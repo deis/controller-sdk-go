@@ -19,6 +19,12 @@ def workdir_linux = { String gopath, dest ->
 	gopath + workpath_linux_root + "/" + dest
 }
 
+def sh = { String cmd ->
+	wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {
+		sh cmd
+	}
+}
+
 node('windows') {
 	def gopath = pwd() + "\\gopath"
 	env.GOPATH = gopath
