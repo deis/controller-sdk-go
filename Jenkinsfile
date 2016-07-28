@@ -105,19 +105,32 @@ node('linux') {
 	def gopath = gopath_linux()
 	def workdir = workdir_linux(gopath, repo)
 
-	// vars/closures around uploading artifacts to gcs
-	def keyfile = "tmp/key.json"
-
 	def getBasePath = { String filepath ->
 		def filename = filepath.lastIndexOf(File.separator)
 		return filepath.substring(0, filename)
 	}
 
-	def upload_artifacts = { String filepath ->
+	def gcs_cleanup_cmd = "sh -c 'rm -rf /.config/*'"
+	def gcs_bucket = "gs://workflow-cli"
+	def gcs_key = "tmp/key.json"
+
+	def gcs_cmd = { String cmd ->
+		gcs_cmd = "docker run --rm -v  ${pwd()}/tmp:/.config -v ${pwd()}/_dist:/upload google/cloud-sdk:latest "
+		try {
+			sh(gcs_cmd + cmd)
+		} catch(error) {
+			sh(gcs_cmd + gcs_cleanup_cmd)
+			error 'gcs error'
+		}
+	}
+
+	def upload_artifacts = {
 		withCredentials([[$class: 'FileBinding', credentialsId: 'e80fd033-dd76-4d96-be79-6c272726fb82', variable: 'GCSKEY']]) {
-			sh "mkdir -p ${getBasePath(filepath)}"
-			sh "cat \"\${GCSKEY}\" > ${filepath}"
-			make 'upload-gcs'
+			sh "mkdir -p ${getBasePath(gcs_key)}"
+			sh "cat \"\${GCSKEY}\" > ${gcs_key}"
+			gcs_cmd 'gcloud auth activate-service-account -q --key-file /.config/key.json'
+			gcs_cmd "gsutil -mq cp -a public-read -r /upload/* ${gcs_bucket}"
+			gcs_cmd gcs_cleanup_cmd
 		}
 	}
 
@@ -145,7 +158,7 @@ node('linux') {
 		sh "VERSION=${git_commit.take(7)} make build-revision"
 
 		stage "Deploy ${repo}"
-		upload_artifacts(keyfile)
+		upload_artifacts()
 	}
 }
 
