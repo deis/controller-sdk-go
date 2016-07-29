@@ -29,7 +29,7 @@ const (
 	duplicateUserMsg      = "A user with that username already exists."
 	invalidEmailMsg       = "Enter a valid email address."
 	invalidTagMsg         = "No nodes matched the provided labels"
-	duplicateIDMsg        = "App with this id already exists."
+	duplicateIDMsg        = "Application with this id already exists."
 	cancellationFailedMsg = "still has applications assigned. Delete or transfer ownership"
 	duplicateDomainMsg    = "Domain is already in use by another application"
 	duplicateKeyMsg       = "Public Key is already in use"

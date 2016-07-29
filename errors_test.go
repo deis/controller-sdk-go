@@ -107,7 +107,7 @@ func TestErrors(t *testing.T) {
 		{
 			res: &http.Response{
 				StatusCode: 400,
-				Body:       readCloser(`{"id":["App with this id already exists."]}`),
+				Body:       readCloser(`{"id":["Application with this id already exists."]}`),
 			},
 			expected: ErrDuplicateApp,
 		},
