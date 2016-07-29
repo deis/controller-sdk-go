@@ -32,6 +32,7 @@ const configFixture string = `
     "registry": {
       "username": "bob"
     },
+    "routable": true,
     "created": "2014-01-01T00:00:00UTC",
     "updated": "2014-01-01T00:00:00UTC",
     "uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75"
@@ -47,14 +48,15 @@ const configUnsetFixture string = `
     "cpu": {},
     "tags": {},
 	"registry": {},
+	"routable": true,
     "created": "2014-01-01T00:00:00UTC",
     "updated": "2014-01-01T00:00:00UTC",
     "uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75"
 }
 `
 
-const configSetExpected string = `{"values":{"FOO":"bar","TEST":"testing"},"memory":{"web":"1G"},"cpu":{"web":"1000"},"tags":{"test":"tests"},"registry":{"username":"bob"}}`
-const configUnsetExpected string = `{"values":{"FOO":null,"TEST":null},"memory":{"web":null},"cpu":{"web":null},"tags":{"test":null},"registry":{"username":null}}`
+const configSetExpected string = `{"values":{"FOO":"bar","TEST":"testing"},"memory":{"web":"1G"},"cpu":{"web":"1000"},"tags":{"test":"tests"},"registry":{"username":"bob"},"routable":true}`
+const configUnsetExpected string = `{"values":{"FOO":null,"TEST":null},"memory":{"web":null},"cpu":{"web":null},"tags":{"test":null},"registry":{"username":null},"routable":true}`
 
 type fakeHTTPServer struct{}
 
@@ -144,9 +146,10 @@ func TestConfigSet(t *testing.T) {
 		Registry: map[string]interface{}{
 			"username": "bob",
 		},
-		Created: "2014-01-01T00:00:00UTC",
-		Updated: "2014-01-01T00:00:00UTC",
-		UUID:    "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
+		Routable: true,
+		Created:  "2014-01-01T00:00:00UTC",
+		Updated:  "2014-01-01T00:00:00UTC",
+		UUID:     "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
 	}
 
 	configVars := api.Config{
@@ -166,6 +169,7 @@ func TestConfigSet(t *testing.T) {
 		Registry: map[string]interface{}{
 			"username": "bob",
 		},
+		Routable: true,
 	}
 
 	actual, err := Set(deis, "example-go", configVars)
@@ -199,6 +203,7 @@ func TestConfigUnset(t *testing.T) {
 		CPU:      map[string]interface{}{},
 		Tags:     map[string]interface{}{},
 		Registry: map[string]interface{}{},
+		Routable: true,
 		Created:  "2014-01-01T00:00:00UTC",
 		Updated:  "2014-01-01T00:00:00UTC",
 		UUID:     "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
@@ -221,6 +226,7 @@ func TestConfigUnset(t *testing.T) {
 		Registry: map[string]interface{}{
 			"username": nil,
 		},
+		Routable: true,
 	}
 
 	actual, err := Set(deis, "unset-test", configVars)
@@ -265,9 +271,10 @@ func TestConfigList(t *testing.T) {
 		Registry: map[string]interface{}{
 			"username": "bob",
 		},
-		Created: "2014-01-01T00:00:00UTC",
-		Updated: "2014-01-01T00:00:00UTC",
-		UUID:    "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
+		Routable: true,
+		Created:  "2014-01-01T00:00:00UTC",
+		Updated:  "2014-01-01T00:00:00UTC",
+		UUID:     "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
 	}
 
 	actual, err := List(deis, "example-go")
