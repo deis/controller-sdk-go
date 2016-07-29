@@ -66,7 +66,7 @@ func (c *Client) Request(method string, path string, body []byte) (*http.Respons
 	c.DeisVersion = res.Header.Get("DEIS_PLATFORM_VERSION")
 
 	// Return results along with api compatibility error
-	return res, checkAPICompatibility(apiVersion)
+	return res, checkAPICompatibility(apiVersion, APIVersion)
 }
 
 // LimitedRequest allows limiting the number of responses in a request.
@@ -129,7 +129,7 @@ your deis version is correct.`
 	apiVersion := res.Header.Get("DEIS_API_VERSION")
 	c.ControllerAPIVersion = apiVersion
 
-	return checkAPICompatibility(apiVersion)
+	return checkAPICompatibility(apiVersion, APIVersion)
 }
 
 func addUserAgent(headers *http.Header, userAgent string) {
