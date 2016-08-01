@@ -61,12 +61,12 @@ func (f *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 			res.Write(nil)
 		}
 
-		if string(body) == appCreateExpected && f.createID == false {
+		if string(body) == appCreateExpected && !f.createID {
 			f.createID = true
 			res.WriteHeader(http.StatusCreated)
 			res.Write([]byte(appFixture))
 			return
-		} else if string(body) == "" && f.createWithoutID == false {
+		} else if string(body) == "" && !f.createWithoutID {
 			f.createWithoutID = true
 			res.WriteHeader(http.StatusCreated)
 			res.Write([]byte(appFixture))

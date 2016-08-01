@@ -84,14 +84,14 @@ func Delete(c *deis.Client, username string) error {
 // with this new token to avoid authentication errors.
 //
 // If username is set and all is false, this will regenerate that user's token
-// and return a new token. If not targeting yourself, regenerate requires administrative privilages.
+// and return a new token. If not targeting yourself, regenerate requires administrative privileges.
 //
-// If all is true, this will regenerate every user's token. This requires administrative privilages.
+// If all is true, this will regenerate every user's token. This requires administrative privileges.
 func Regenerate(c *deis.Client, username string, all bool) (string, error) {
 	var reqBody []byte
 	var err error
 
-	if all == true {
+	if all {
 		reqBody, err = json.Marshal(api.AuthRegenerateRequest{All: all})
 	} else if username != "" {
 		reqBody, err = json.Marshal(api.AuthRegenerateRequest{Name: username})
@@ -111,7 +111,7 @@ func Regenerate(c *deis.Client, username string, all bool) (string, error) {
 		res.Body.Close()
 	}()
 
-	if all == true {
+	if all {
 		return "", nil
 	}
 
@@ -128,7 +128,7 @@ func Regenerate(c *deis.Client, username string, all bool) (string, error) {
 // If username if an empty string, change the password of the client's user.
 //
 // If username is set, change the password of another user and do not require
-// their password. This requires administrative privilages.
+// their password. This requires administrative privileges.
 func Passwd(c *deis.Client, username, password, newPassword string) error {
 	req := api.AuthPasswdRequest{Password: password, NewPassword: newPassword}
 
@@ -149,6 +149,7 @@ func Passwd(c *deis.Client, username, password, newPassword string) error {
 	return err
 }
 
+// Whoami retrives the user object for the authenticated user.
 func Whoami(c *deis.Client) (api.User, error) {
 	res, err := c.Request("GET", "/v2/auth/whoami/", nil)
 	if err != nil {

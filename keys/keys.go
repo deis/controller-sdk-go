@@ -53,7 +53,7 @@ func New(c *deis.Client, id string, pubKey string) (api.Key, error) {
 }
 
 // Delete removes a user's ssh key. The key ID will be the key comment, usually the email or user@hostname
-// of the user. The exact keyID can be retrived with List()
+// of the user. The exact keyID can be retrieved with List()
 func Delete(c *deis.Client, keyID string) error {
 	u := fmt.Sprintf("/v2/keys/%s", keyID)
 

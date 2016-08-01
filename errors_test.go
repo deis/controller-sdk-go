@@ -21,7 +21,7 @@ func (m *mockReadCloser) Close() error {
 }
 
 func (m *mockReadCloser) Read(msg []byte) (int, error) {
-	if m.closed == true {
+	if m.closed {
 		return 0, errors.New("You can't read on a closed ReadCloser")
 	}
 
@@ -29,9 +29,8 @@ func (m *mockReadCloser) Read(msg []byte) (int, error) {
 		return 0, io.EOF
 	}
 
-	for i, b := range []byte(m.msg) {
-		msg[i] = b
-	}
+	copy(msg, []byte(m.msg))
+
 	len := len(m.msg)
 	m.msg = ""
 	return len, nil

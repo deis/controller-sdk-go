@@ -34,6 +34,7 @@ Date Joined: %s`
 		u.IsSuperuser, u.IsStaff, u.IsActive, u.DateJoined)
 }
 
+// Users holds a collection of user objects.
 type Users []User
 
 func (u Users) Len() int           { return len(u) }

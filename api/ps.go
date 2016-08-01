@@ -11,17 +11,20 @@ type Pods struct {
 	Started time.Time `json:"started"`
 }
 
+// PodsList defines a collection of app pods.
 type PodsList []Pods
 
 func (p PodsList) Len() int           { return len(p) }
 func (p PodsList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 func (p PodsList) Less(i, j int) bool { return p[i].Name < p[j].Name }
 
+// PodType holds pods of the same type.
 type PodType struct {
 	Type     string
 	PodsList PodsList
 }
 
+// PodTypes holds groups of pods organized by type.
 type PodTypes []PodType
 
 func (p PodTypes) Len() int           { return len(p) }

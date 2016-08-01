@@ -10,6 +10,7 @@ type Key struct {
 	UUID    string `json:"uuid"`
 }
 
+// Keys defines a collection of key objects.
 type Keys []Key
 
 func (k Keys) Len() int           { return len(k) }

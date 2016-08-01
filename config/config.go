@@ -37,7 +37,7 @@ func List(c *deis.Client, app string) (api.Config, error) {
 // This is a patching operation, which means when you call Set() with an api.Config:
 //
 //    - If the variable does not exist, it will be set.
-//    - If the variable exists, it will be overwriten.
+//    - If the variable exists, it will be overwritten.
 //    - If the variable is set to nil, it will be unset.
 //    - If the variable was ignored in the api.Config, it will remain unchanged.
 //

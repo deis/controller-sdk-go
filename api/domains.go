@@ -9,6 +9,7 @@ type Domain struct {
 	Updated string `json:"updated"`
 }
 
+// Domains defines a collection of domain objects.
 type Domains []Domain
 
 func (d Domains) Len() int           { return len(d) }

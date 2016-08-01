@@ -10,6 +10,7 @@ type App struct {
 	UUID    string `json:"uuid"`
 }
 
+// Apps defines a collection of app objects.
 type Apps []App
 
 func (a Apps) Len() int           { return len(a) }
