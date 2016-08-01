@@ -1,3 +1,4 @@
+// Package users provides methods for viewing users.
 package users
 
 import (
@@ -7,7 +8,7 @@ import (
 	"github.com/deis/controller-sdk-go/api"
 )
 
-// List users registered with the controller.
+// List lists users registered with the controller.
 func List(c *deis.Client, results int) (api.Users, int, error) {
 	body, count, err := c.LimitedRequest("/v2/users/", results)
 
