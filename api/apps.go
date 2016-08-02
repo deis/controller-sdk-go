@@ -6,7 +6,6 @@ type App struct {
 	ID      string `json:"id"`
 	Owner   string `json:"owner"`
 	Updated string `json:"updated"`
-	URL     string `json:"-"`
 	UUID    string `json:"uuid"`
 }
 

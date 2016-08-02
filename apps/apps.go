@@ -8,7 +8,6 @@ import (
 	"io"
 	"io/ioutil"
 	"strconv"
-	"strings"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -35,12 +34,6 @@ func List(c *deis.Client, results int) (api.Apps, int, error) {
 	var apps []api.App
 	if err = json.Unmarshal([]byte(body), &apps); err != nil {
 		return []api.App{}, -1, err
-	}
-
-	for name, app := range apps {
-		// Add in app URL based on controller hostname, port included
-		app.URL = fmt.Sprintf("%s.%s", app.ID, strings.TrimPrefix(c.ControllerURL.Host, workflowURLPrefix))
-		apps[name] = app
 	}
 
 	return apps, count, nil
@@ -78,9 +71,6 @@ func New(c *deis.Client, appID string) (api.App, error) {
 		return api.App{}, err
 	}
 
-	// Add in app URL based on controller hostname, port included
-	app.URL = fmt.Sprintf("%s.%s", app.ID, strings.TrimPrefix(c.ControllerURL.Host, workflowURLPrefix))
-
 	return app, reqErr
 }
 
@@ -103,9 +93,6 @@ func Get(c *deis.Client, appID string) (api.App, error) {
 	if err := json.NewDecoder(res.Body).Decode(&app); err != nil {
 		return api.App{}, err
 	}
-
-	// Add in app URL based on controller hostname, port included
-	app.URL = fmt.Sprintf("%s.%s", app.ID, strings.TrimPrefix(c.ControllerURL.Host, workflowURLPrefix))
 
 	return app, reqErr
 }

@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"reflect"
 	"testing"
 
@@ -162,14 +161,11 @@ func TestAppsCreate(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	u, _ := url.Parse(server.URL)
-
 	expected := api.App{
 		ID:      "example-go",
 		Created: "2014-01-01T00:00:00UTC",
 		Owner:   "test",
 		Updated: "2014-01-01T00:00:00UTC",
-		URL:     fmt.Sprintf("example-go.%s", u.Host),
 		UUID:    "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
 	}
 
@@ -198,14 +194,11 @@ func TestAppsGet(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	u, _ := url.Parse(server.URL)
-
 	expected := api.App{
 		ID:      "example-go",
 		Created: "2014-01-01T00:00:00UTC",
 		Owner:   "test",
 		Updated: "2014-01-01T00:00:00UTC",
-		URL:     fmt.Sprintf("example-go.%s", u.Host),
 		UUID:    "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
 	}
 
@@ -277,15 +270,12 @@ func TestAppsList(t *testing.T) {
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
-	u, _ := url.Parse(server.URL)
-
 	expected := api.Apps{
 		{
 			ID:      "example-go",
 			Created: "2014-01-01T00:00:00UTC",
 			Owner:   "test",
 			Updated: "2014-01-01T00:00:00UTC",
-			URL:     fmt.Sprintf("example-go.%s", u.Host),
 			UUID:    "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
 		},
 	}
