@@ -54,7 +54,12 @@ node('linux') {
 		stage 'Install Linux'
 			make 'bootstrap'
 		stage 'Test Linux'
-			make 'test'
+			make 'test-style'
+			make 'test-cover'
+		stage 'Upload to Codecov'
+			withCredentials([[$class: 'StringBinding', credentialsId: '2da033eb-2e34-4efd-b090-ad892f348065', variable: 'CODECOV_TOKEN']]) {
+				sh 'curl -s https://codecov.io/bash | bash'
+			}
 	}
 }
 

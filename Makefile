@@ -27,6 +27,9 @@ test-style:
 test-unit:
 	${DEV_ENV_PREFIX_CGO_ENABLED} ${DEV_ENV_IMAGE} sh -c '${GOTEST} $$(glide nv)'
 
+test-cover: test-style
+	${DEV_ENV_PREFIX_CGO_ENABLED} ${DEV_ENV_IMAGE} test-cover.sh
+
 # Set local user as owner for files
 fileperms:
 	${DEV_ENV_PREFIX_CGO_ENABLED} ${DEV_ENV_IMAGE} chown -R ${UID}:${GID} .
