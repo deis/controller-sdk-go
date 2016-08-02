@@ -172,7 +172,8 @@ stage 'Trigger e2e tests'
 waitUntil {
 	try {
 		def downstreamJob = git_branch == "remotes/origin/master" ? '/workflow-test' : '/workflow-test-pr'
-		build job: downstreamJob, parameters: [[$class: 'StringParameterValue', name: 'WORKFLOW_CLI_SHA', value: git_commit]]
+		build job: downstreamJob, parameters: [[$class: 'StringParameterValue', name: 'WORKFLOW_CLI_SHA', value: git_commit],
+			[$class: 'StringParameterValue', name: 'COMPONENT_REPO', value: 'controller-sdk-go']]
 		true
 	} catch(error) {
 			node('linux') {
