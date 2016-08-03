@@ -13,8 +13,6 @@ import (
 	"github.com/deis/controller-sdk-go/api"
 )
 
-const workflowURLPrefix = "deis."
-
 // ErrNoLogs is returned when logs are missing from an app.
 var ErrNoLogs = errors.New(
 	`There are currently no log messages. Please check the following things:
