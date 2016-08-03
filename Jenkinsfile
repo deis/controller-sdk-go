@@ -5,7 +5,7 @@ def make = { String target ->
 		sh "make ${target} fileperms"
 	} catch(error) {
 		sh 'make fileperms'
-		false
+		throw error
 	}
 }
 
@@ -125,7 +125,7 @@ node('linux') {
 			sh(gcs_cmd + cmd)
 		} catch(error) {
 			sh(gcs_cmd + gcs_cleanup_cmd)
-			error 'gcs error'
+			throw error
 		}
 	}
 
@@ -175,10 +175,13 @@ waitUntil {
 		build job: downstreamJob, parameters: [[$class: 'StringParameterValue', name: 'WORKFLOW_CLI_SHA', value: git_commit]]
 		true
 	} catch(error) {
-			node('linux') {
-				if (git_branch != "remotes/origin/master") {
-					withCredentials([[$class: 'StringBinding', credentialsId: '8a727911-596f-4057-97c2-b9e23de5268d', variable: 'SLACKEMAIL']]) {
-						mail body: """<!DOCTYPE html>
+		if (git_branch == "remotes/origin/master") {
+			throw error
+		}
+
+		node('linux') {
+			withCredentials([[$class: 'StringBinding', credentialsId: '8a727911-596f-4057-97c2-b9e23de5268d', variable: 'SLACKEMAIL']]) {
+				mail body: """<!DOCTYPE html>
 <html>
 <head>
 <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
@@ -192,10 +195,9 @@ Commit: ${env.CHANGE_TITLE}<br/>
 </div>
 </html>
 """, from: 'jenkins@ci.deis.io', subject: 'Controller-sdk-go E2E Test Failure', to: env.SLACKEMAIL, mimeType: 'text/html'
-					}
-					input "Retry the e2e tests?"
-				}
 			}
+			input "Retry the e2e tests?"
+		}
 		false
 	}
 }
