@@ -14,17 +14,17 @@ import (
 // List lists an app's processes.
 func List(c *deis.Client, appID string, results int) ([]api.Pods, int, error) {
 	u := fmt.Sprintf("/v2/apps/%s/pods/", appID)
-	body, count, err := c.LimitedRequest(u, results)
-	if err != nil {
-		return []api.Pods{}, -1, err
+	body, count, reqErr := c.LimitedRequest(u, results)
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return []api.Pods{}, -1, reqErr
 	}
 
 	var procs []api.Pods
-	if err = json.Unmarshal([]byte(body), &procs); err != nil {
+	if err := json.Unmarshal([]byte(body), &procs); err != nil {
 		return []api.Pods{}, -1, err
 	}
 
-	return procs, count, nil
+	return procs, count, reqErr
 }
 
 // Scale increases or decreases an app's processes. The processes are specified in the target argument,

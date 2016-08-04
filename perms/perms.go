@@ -33,14 +33,14 @@ func List(c *deis.Client, appID string) ([]string, error) {
 
 // ListAdmins lists deis platform administrators.
 func ListAdmins(c *deis.Client, results int) ([]string, int, error) {
-	body, count, err := c.LimitedRequest("/v2/admin/perms/", results)
+	body, count, reqErr := c.LimitedRequest("/v2/admin/perms/", results)
 
-	if err != nil {
-		return []string{}, -1, err
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return []string{}, -1, reqErr
 	}
 
 	var users []api.PermsRequest
-	if err = json.Unmarshal([]byte(body), &users); err != nil {
+	if err := json.Unmarshal([]byte(body), &users); err != nil {
 		return []string{}, -1, err
 	}
 
@@ -50,7 +50,7 @@ func ListAdmins(c *deis.Client, results int) ([]string, int, error) {
 		usersList = append(usersList, user.Username)
 	}
 
-	return usersList, count, nil
+	return usersList, count, reqErr
 }
 
 // New gives a user access to an app.

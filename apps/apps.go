@@ -23,18 +23,18 @@ var ErrNoLogs = errors.New(
 
 // List lists apps on a Deis controller.
 func List(c *deis.Client, results int) (api.Apps, int, error) {
-	body, count, err := c.LimitedRequest("/v2/apps/", results)
+	body, count, reqErr := c.LimitedRequest("/v2/apps/", results)
 
-	if err != nil {
-		return []api.App{}, -1, err
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return []api.App{}, -1, reqErr
 	}
 
 	var apps []api.App
-	if err = json.Unmarshal([]byte(body), &apps); err != nil {
+	if err := json.Unmarshal([]byte(body), &apps); err != nil {
 		return []api.App{}, -1, err
 	}
 
-	return apps, count, nil
+	return apps, count, reqErr
 }
 
 // New creates a new app with the given appID. Passing an empty string will result in

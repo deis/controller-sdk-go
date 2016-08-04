@@ -15,18 +15,18 @@ import (
 func List(c *deis.Client, appID string, results int) ([]api.Release, int, error) {
 	u := fmt.Sprintf("/v2/apps/%s/releases/", appID)
 
-	body, count, err := c.LimitedRequest(u, results)
+	body, count, reqErr := c.LimitedRequest(u, results)
 
-	if err != nil {
-		return []api.Release{}, -1, err
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return []api.Release{}, -1, reqErr
 	}
 
 	var releases []api.Release
-	if err = json.Unmarshal([]byte(body), &releases); err != nil {
+	if err := json.Unmarshal([]byte(body), &releases); err != nil {
 		return []api.Release{}, -1, err
 	}
 
-	return releases, count, nil
+	return releases, count, reqErr
 }
 
 // Get retrieves a release of an app.

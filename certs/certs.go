@@ -13,18 +13,18 @@ import (
 
 // List lists certificates added to deis.
 func List(c *deis.Client, results int) ([]api.Cert, int, error) {
-	body, count, err := c.LimitedRequest("/v2/certs/", results)
+	body, count, reqErr := c.LimitedRequest("/v2/certs/", results)
 
-	if err != nil {
-		return []api.Cert{}, -1, err
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return []api.Cert{}, -1, reqErr
 	}
 
 	var res []api.Cert
-	if err = json.Unmarshal([]byte(body), &res); err != nil {
+	if err := json.Unmarshal([]byte(body), &res); err != nil {
 		return []api.Cert{}, -1, err
 	}
 
-	return res, count, nil
+	return res, count, reqErr
 }
 
 // New creates a new certificate.

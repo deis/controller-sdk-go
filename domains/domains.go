@@ -14,18 +14,18 @@ import (
 // List domains registered with an app.
 func List(c *deis.Client, appID string, results int) (api.Domains, int, error) {
 	u := fmt.Sprintf("/v2/apps/%s/domains/", appID)
-	body, count, err := c.LimitedRequest(u, results)
+	body, count, reqErr := c.LimitedRequest(u, results)
 
-	if err != nil {
-		return []api.Domain{}, -1, err
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return []api.Domain{}, -1, reqErr
 	}
 
 	var domains []api.Domain
-	if err = json.Unmarshal([]byte(body), &domains); err != nil {
+	if err := json.Unmarshal([]byte(body), &domains); err != nil {
 		return []api.Domain{}, -1, err
 	}
 
-	return domains, count, nil
+	return domains, count, reqErr
 }
 
 // New adds a domain to an app.

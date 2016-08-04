@@ -14,18 +14,18 @@ import (
 // List lists an app's builds.
 func List(c *deis.Client, appID string, results int) ([]api.Build, int, error) {
 	u := fmt.Sprintf("/v2/apps/%s/builds/", appID)
-	body, count, err := c.LimitedRequest(u, results)
+	body, count, reqErr := c.LimitedRequest(u, results)
 
-	if err != nil {
-		return []api.Build{}, -1, err
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return []api.Build{}, -1, reqErr
 	}
 
 	var builds []api.Build
-	if err = json.Unmarshal([]byte(body), &builds); err != nil {
+	if err := json.Unmarshal([]byte(body), &builds); err != nil {
 		return []api.Build{}, -1, err
 	}
 
-	return builds, count, nil
+	return builds, count, reqErr
 }
 
 // New creates a build for an app from an docker image.

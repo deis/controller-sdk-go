@@ -13,18 +13,18 @@ import (
 
 // List lists a user's ssh keys.
 func List(c *deis.Client, results int) (api.Keys, int, error) {
-	body, count, err := c.LimitedRequest("/v2/keys/", results)
+	body, count, reqErr := c.LimitedRequest("/v2/keys/", results)
 
-	if err != nil {
-		return []api.Key{}, -1, err
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+		return []api.Key{}, -1, reqErr
 	}
 
 	var keys []api.Key
-	if err = json.Unmarshal([]byte(body), &keys); err != nil {
+	if err := json.Unmarshal([]byte(body), &keys); err != nil {
 		return []api.Key{}, -1, err
 	}
 
-	return keys, count, nil
+	return keys, count, reqErr
 }
 
 // New adds a new ssh key for the user. This is used for authenting with the git
