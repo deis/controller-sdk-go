@@ -40,3 +40,9 @@ type Users []User
 func (u Users) Len() int           { return len(u) }
 func (u Users) Swap(i, j int)      { u[i], u[j] = u[j], u[i] }
 func (u Users) Less(i, j int) bool { return u[i].Username < u[j].Username }
+
+// UserApps is a definition of the UserFromKey Hook response.
+type UserApps struct {
+	Username string   `json:"username"`
+	Apps     []string `json:"apps"`
+}

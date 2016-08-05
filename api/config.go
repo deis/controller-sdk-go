@@ -46,6 +46,12 @@ type Config struct {
 	UUID string `json:"uuid,omitempty"`
 }
 
+// ConfigHookRequest defines the request for configuration from the config hook.
+type ConfigHookRequest struct {
+	User string `json:"receive_user"`
+	App  string `json:"receive_repo"`
+}
+
 // Healthcheck is the structure for an application healthcheck.
 // Healthchecks only need to provide information about themselves.
 // All the information is pushed to the server and handled by kubernetes.

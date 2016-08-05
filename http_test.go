@@ -48,6 +48,12 @@ func (f fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	if req.URL.Path == "/healthz" {
+		res.WriteHeader(http.StatusOK)
+		res.Write(nil)
+		return
+	}
+
 	if req.URL.Path == "/limited/" && req.Method == "GET" && req.URL.RawQuery == "limit=2" {
 		res.Write([]byte(limitedFixture))
 		return
@@ -57,6 +63,14 @@ func (f fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		eT := "token abc"
 		if req.Header.Get("Authorization") != eT {
 			fmt.Printf("Token Wrong: Expected %s, Got %s\n", eT, req.Header.Get("Authorization"))
+			res.WriteHeader(http.StatusInternalServerError)
+			res.Write(nil)
+			return
+		}
+
+		bT := "testing"
+		if req.Header.Get("X-Deis-Builder-Auth") != bT {
+			fmt.Printf("Hook Token Wrong: Expected %s, Got %s\n", bT, req.Header.Get("X-Deis-Builder-Auth"))
 			res.WriteHeader(http.StatusInternalServerError)
 			res.Write(nil)
 			return
@@ -147,6 +161,7 @@ func TestBasicRequest(t *testing.T) {
 		t.Fatal(err)
 	}
 	deis.UserAgent = "test"
+	deis.HooksToken = "testing"
 
 	res, err := deis.Request("POST", "/request/", []byte("test"))
 	if err != nil {
@@ -211,5 +226,23 @@ func TestLimitedRequest(t *testing.T) {
 	// Make sure the request doesn't modify the URL
 	if deis.ControllerURL.String() != server.URL {
 		t.Errorf("Expected %s, Got %s", server.URL, deis.ControllerURL.String())
+	}
+}
+
+func TestHealthcheck(t *testing.T) {
+	t.Parallel()
+
+	handler := fakeHTTPServer{Version: APIVersion}
+	server := httptest.NewServer(handler)
+	defer server.Close()
+
+	deis, err := New(false, server.URL, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	deis.UserAgent = "test"
+
+	if err = deis.Healthcheck(); err != nil {
+		t.Error(err)
 	}
 }

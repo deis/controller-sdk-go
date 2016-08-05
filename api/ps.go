@@ -2,6 +2,12 @@ package api
 
 import "github.com/deis/controller-sdk-go/pkg/time"
 
+// ProcessType represents the key/value mappings of a process type to a process inside
+// a Heroku Procfile.
+//
+// See https://devcenter.heroku.com/articles/procfile
+type ProcessType map[string]string
+
 // Pods defines the structure of a process.
 type Pods struct {
 	Release string    `json:"release"`

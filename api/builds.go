@@ -18,3 +18,13 @@ type CreateBuildRequest struct {
 	Image    string            `json:"image"`
 	Procfile map[string]string `json:"procfile,omitempty"`
 }
+
+// BuildHookRequest is a hook request to create a new build.
+type BuildHookRequest struct {
+	Sha        string      `json:"sha"`
+	User       string      `json:"receive_user"`
+	App        string      `json:"receive_repo"`
+	Image      string      `json:"image"`
+	Procfile   ProcessType `json:"procfile"`
+	Dockerfile string      `json:"dockerfile"`
+}

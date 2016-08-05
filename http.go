@@ -47,6 +47,10 @@ func (c *Client) Request(method string, path string, body []byte) (*http.Respons
 		req.Header.Add("Authorization", "token "+c.Token)
 	}
 
+	if c.HooksToken != "" {
+		req.Header.Add("X-Deis-Builder-Auth", c.HooksToken)
+	}
+
 	addUserAgent(&req.Header, c.UserAgent)
 
 	res, err := c.HTTPClient.Do(req)
@@ -116,7 +120,6 @@ your deis version is correct.`
 	res, err := c.HTTPClient.Do(req)
 
 	if err != nil {
-		fmt.Printf(errorMessage+"\n", c.ControllerURL.String())
 		return err
 	}
 	defer res.Body.Close()
@@ -124,6 +127,34 @@ your deis version is correct.`
 	if res.StatusCode != 401 {
 		return fmt.Errorf(errorMessage, c.ControllerURL.String())
 	}
+
+	// Update controller api version
+	apiVersion := res.Header.Get("DEIS_API_VERSION")
+	c.ControllerAPIVersion = apiVersion
+
+	return checkAPICompatibility(apiVersion, APIVersion)
+}
+
+// Healthcheck can be called to see if the controller is healthy
+func (c *Client) Healthcheck() error {
+	// Make a request to /healthz and expect an ok HTTP response
+	req, err := http.NewRequest("GET", c.ControllerURL.String()+"/healthz", bytes.NewBuffer(nil))
+	addUserAgent(&req.Header, c.UserAgent)
+
+	if err != nil {
+		return err
+	}
+
+	res, err := c.HTTPClient.Do(req)
+
+	if err != nil {
+		return err
+	}
+
+	if err = checkForErrors(res); err != nil {
+		return err
+	}
+	res.Body.Close()
 
 	// Update controller api version
 	apiVersion := res.Header.Get("DEIS_API_VERSION")
