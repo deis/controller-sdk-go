@@ -44,6 +44,8 @@ type Config struct {
 	// UUID is a unique string reflecting the configuration in its current state.
 	// It changes every time the configuration is changed and cannot be updated.
 	UUID string `json:"uuid,omitempty"`
+	// Routable determines if the application should be exposed by the router.
+	Routable bool `json:"routable,omitempty"`
 }
 
 // ConfigHookRequest defines the request for configuration from the config hook.
