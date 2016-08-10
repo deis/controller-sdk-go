@@ -160,7 +160,9 @@ node('linux') {
 		echo "Updated glide.yaml:\n${glideYaml}"
 
 		make 'glideup'
-		sh "VERSION=${git_commit.take(7)} make build-revision"
+		env.REVISION = git_commit.take(7)
+		env.VERSION = "csdk-ci-" + git_commit.take(7)
+		make 'build-revision'
 
 		stage "Deploy ${repo}"
 		upload_artifacts()
