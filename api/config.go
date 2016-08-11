@@ -45,7 +45,12 @@ type Config struct {
 	// It changes every time the configuration is changed and cannot be updated.
 	UUID string `json:"uuid,omitempty"`
 	// Routable determines if the application should be exposed by the router.
-	Routable bool `json:"routable,omitempty"`
+	Routable *bool `json:"routable,omitempty"`
+}
+
+func NewRoutable() *bool {
+	b := true
+	return &b
 }
 
 // ConfigHookRequest defines the request for configuration from the config hook.
