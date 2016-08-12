@@ -275,9 +275,10 @@ func TestErrors(t *testing.T) {
 		{
 			res: &http.Response{
 				StatusCode: 400,
-				Body:       readCloser(`{"detail":"unknown error"}`),
+				Body:       readCloser(`{"detail":"unknown error\nnewline"}`),
 			},
-			expected: errors.New(`Unknown Error (400): {"detail":"unknown error"}`),
+			expected: errors.New(`Unknown Error (400): {"detail":"unknown error
+newline"}`),
 		},
 	}
 

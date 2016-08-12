@@ -253,6 +253,8 @@ func arrayContains(search string, completeMatch bool, array []string) bool {
 }
 
 func unknownServerError(statusCode int, message string) error {
+	// newlines set from controller aren't evaluated as controller characters, so they need to be replaced
+	message = strings.Replace(message, `\n`, "\n", -1)
 	return fmt.Errorf(formatErrUnknown, statusCode, message)
 }
 
