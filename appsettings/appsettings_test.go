@@ -17,6 +17,7 @@ const appSettingsFixture string = `
     "owner": "test",
     "app": "example-go",
     "maintenance": true,
+    "routable": true,
     "created": "2014-01-01T00:00:00UTC",
     "updated": "2014-01-01T00:00:00UTC",
     "uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75"
@@ -28,14 +29,15 @@ const appSettingsUnsetFixture string = `
     "owner": "test",
     "app": "unset-test",
 	  "maintenance": true,
+    "routable": true,
     "created": "2014-01-01T00:00:00UTC",
     "updated": "2014-01-01T00:00:00UTC",
     "uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75"
 }
 `
 
-const appSettingsSetExpected string = `{"maintenance":true}`
-const appSettingsUnsetExpected string = `{"maintenance":true}`
+const appSettingsSetExpected string = `{"maintenance":true,"routable":true}`
+const appSettingsUnsetExpected string = `{"maintenance":true,"routable":true}`
 
 var trueVar = true
 
@@ -122,6 +124,7 @@ func TestAppSettingsSet(t *testing.T) {
 	expected := api.AppSettings{
 		Owner:       "test",
 		App:         "example-go",
+		Routable:    api.NewRoutable(),
 		Maintenance: &trueVar,
 		Created:     "2014-01-01T00:00:00UTC",
 		Updated:     "2014-01-01T00:00:00UTC",
@@ -130,6 +133,7 @@ func TestAppSettingsSet(t *testing.T) {
 
 	appSettingsVars := api.AppSettings{
 		Maintenance: &trueVar,
+		Routable:    api.NewRoutable(),
 	}
 
 	actual, err := Set(deis, "example-go", appSettingsVars)
@@ -159,6 +163,7 @@ func TestAppSettingsUnset(t *testing.T) {
 		Owner:       "test",
 		App:         "unset-test",
 		Maintenance: &trueVar,
+		Routable:    api.NewRoutable(),
 		Created:     "2014-01-01T00:00:00UTC",
 		Updated:     "2014-01-01T00:00:00UTC",
 		UUID:        "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
@@ -166,6 +171,7 @@ func TestAppSettingsUnset(t *testing.T) {
 
 	appSettingsVars := api.AppSettings{
 		Maintenance: &trueVar,
+		Routable:    api.NewRoutable(),
 	}
 
 	actual, err := Set(deis, "unset-test", appSettingsVars)
@@ -195,6 +201,7 @@ func TestAppSettingsList(t *testing.T) {
 		Owner:       "test",
 		App:         "example-go",
 		Maintenance: &trueVar,
+		Routable:    api.NewRoutable(),
 		Created:     "2014-01-01T00:00:00UTC",
 		Updated:     "2014-01-01T00:00:00UTC",
 		UUID:        "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",

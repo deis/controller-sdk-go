@@ -14,5 +14,12 @@ type AppSettings struct {
 	// It changes every time the application settings is changed and cannot be updated.
 	UUID string `json:"uuid,omitempty"`
 	// Maintenance determines if the application is taken down for maintenance or not.
-	Maintenance *bool `json:"maintenance"`
+	Maintenance *bool `json:"maintenance,omitempty"`
+	// Routable determines if the application should be exposed by the router.
+	Routable *bool `json:"routable,omitempty"`
+}
+
+func NewRoutable() *bool {
+	b := true
+	return &b
 }
