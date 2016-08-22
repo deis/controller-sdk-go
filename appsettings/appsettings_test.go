@@ -18,6 +18,7 @@ const appSettingsFixture string = `
     "app": "example-go",
     "maintenance": true,
     "routable": true,
+    "whitelist": ["1.2.3.4", "0.0.0.0/0"],
     "created": "2014-01-01T00:00:00UTC",
     "updated": "2014-01-01T00:00:00UTC",
     "uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75"
@@ -30,14 +31,15 @@ const appSettingsUnsetFixture string = `
     "app": "unset-test",
 	  "maintenance": true,
     "routable": true,
+    "whitelist": ["1.2.3.4", "0.0.0.0/0"],
     "created": "2014-01-01T00:00:00UTC",
     "updated": "2014-01-01T00:00:00UTC",
     "uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75"
 }
 `
 
-const appSettingsSetExpected string = `{"maintenance":true,"routable":true}`
-const appSettingsUnsetExpected string = `{"maintenance":true,"routable":true}`
+const appSettingsSetExpected string = `{"maintenance":true,"routable":true,"whitelist":["1.2.3.4","0.0.0.0/0"]}`
+const appSettingsUnsetExpected string = `{"maintenance":true,"routable":true,"whitelist":["1.2.3.4","0.0.0.0/0"]}`
 
 var trueVar = true
 
@@ -126,6 +128,7 @@ func TestAppSettingsSet(t *testing.T) {
 		App:         "example-go",
 		Routable:    api.NewRoutable(),
 		Maintenance: &trueVar,
+		Whitelist:   []string{"1.2.3.4", "0.0.0.0/0"},
 		Created:     "2014-01-01T00:00:00UTC",
 		Updated:     "2014-01-01T00:00:00UTC",
 		UUID:        "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
@@ -134,6 +137,7 @@ func TestAppSettingsSet(t *testing.T) {
 	appSettingsVars := api.AppSettings{
 		Maintenance: &trueVar,
 		Routable:    api.NewRoutable(),
+		Whitelist:   []string{"1.2.3.4", "0.0.0.0/0"},
 	}
 
 	actual, err := Set(deis, "example-go", appSettingsVars)
@@ -164,6 +168,7 @@ func TestAppSettingsUnset(t *testing.T) {
 		App:         "unset-test",
 		Maintenance: &trueVar,
 		Routable:    api.NewRoutable(),
+		Whitelist:   []string{"1.2.3.4", "0.0.0.0/0"},
 		Created:     "2014-01-01T00:00:00UTC",
 		Updated:     "2014-01-01T00:00:00UTC",
 		UUID:        "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
@@ -172,6 +177,7 @@ func TestAppSettingsUnset(t *testing.T) {
 	appSettingsVars := api.AppSettings{
 		Maintenance: &trueVar,
 		Routable:    api.NewRoutable(),
+		Whitelist:   []string{"1.2.3.4", "0.0.0.0/0"},
 	}
 
 	actual, err := Set(deis, "unset-test", appSettingsVars)
@@ -202,6 +208,7 @@ func TestAppSettingsList(t *testing.T) {
 		App:         "example-go",
 		Maintenance: &trueVar,
 		Routable:    api.NewRoutable(),
+		Whitelist:   []string{"1.2.3.4", "0.0.0.0/0"},
 		Created:     "2014-01-01T00:00:00UTC",
 		Updated:     "2014-01-01T00:00:00UTC",
 		UUID:        "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
