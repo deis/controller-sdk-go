@@ -19,6 +19,7 @@ type AppSettings struct {
 	Routable *bool `json:"routable,omitempty"`
 }
 
+// NewRoutable returns a default value for the AppSettings.Routable field.
 func NewRoutable() *bool {
 	b := true
 	return &b

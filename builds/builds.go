@@ -4,8 +4,6 @@ package builds
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -72,11 +70,7 @@ func New(c *deis.Client, appID string, image string,
 	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
 		return api.Build{}, reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	build := api.Build{}
 	if err = json.NewDecoder(res.Body).Decode(&build); err != nil {

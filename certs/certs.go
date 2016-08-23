@@ -4,8 +4,6 @@ package certs
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -42,11 +40,7 @@ func New(c *deis.Client, cert string, key string, name string) (api.Cert, error)
 	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
 		return api.Cert{}, reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	resCert := api.Cert{}
 	if err = json.NewDecoder(res.Body).Decode(&resCert); err != nil {
@@ -63,11 +57,7 @@ func Get(c *deis.Client, name string) (api.Cert, error) {
 	if reqErr != nil {
 		return api.Cert{}, reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	resCert := api.Cert{}
 	if err := json.NewDecoder(res.Body).Decode(&resCert); err != nil {

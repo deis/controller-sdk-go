@@ -4,8 +4,6 @@ package appsettings
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -19,11 +17,7 @@ func List(c *deis.Client, app string) (api.AppSettings, error) {
 	if reqErr != nil {
 		return api.AppSettings{}, reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	settings := api.AppSettings{}
 	if err := json.NewDecoder(res.Body).Decode(&settings); err != nil {
@@ -55,11 +49,7 @@ func Set(c *deis.Client, app string, appSettings api.AppSettings) (api.AppSettin
 	if reqErr != nil {
 		return api.AppSettings{}, reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	newAppSettings := api.AppSettings{}
 	if err = json.NewDecoder(res.Body).Decode(&newAppSettings); err != nil {

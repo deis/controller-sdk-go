@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -96,12 +95,7 @@ func checkForErrors(res *http.Response) error {
 	if res.StatusCode >= 200 && res.StatusCode < 400 {
 		return nil
 	}
-
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	out, err := ioutil.ReadAll(res.Body)
 	if err != nil {

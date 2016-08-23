@@ -4,8 +4,6 @@ package ps
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -65,11 +63,7 @@ func Restart(c *deis.Client, appID string, procType string, name string) ([]api.
 	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
 		return []api.Pods{}, reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	procs := []api.Pods{}
 	if err := json.NewDecoder(res.Body).Decode(&procs); err != nil {

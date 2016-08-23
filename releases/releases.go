@@ -4,8 +4,6 @@ package releases
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -37,11 +35,7 @@ func Get(c *deis.Client, appID string, version int) (api.Release, error) {
 	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
 		return api.Release{}, reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	release := api.Release{}
 	if err := json.NewDecoder(res.Body).Decode(&release); err != nil {
@@ -72,11 +66,7 @@ func Rollback(c *deis.Client, appID string, version int) (int, error) {
 	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
 		return -1, reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	response := api.ReleaseRollback{}
 

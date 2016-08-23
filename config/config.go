@@ -4,8 +4,6 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -19,11 +17,7 @@ func List(c *deis.Client, app string) (api.Config, error) {
 	if reqErr != nil {
 		return api.Config{}, reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	config := api.Config{}
 	if err := json.NewDecoder(res.Body).Decode(&config); err != nil {
@@ -57,11 +51,7 @@ func Set(c *deis.Client, app string, config api.Config) (api.Config, error) {
 	if reqErr != nil {
 		return api.Config{}, reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	newConfig := api.Config{}
 	if err = json.NewDecoder(res.Body).Decode(&newConfig); err != nil {

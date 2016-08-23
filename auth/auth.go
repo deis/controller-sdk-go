@@ -3,8 +3,6 @@ package auth
 
 import (
 	"encoding/json"
-	"io"
-	"io/ioutil"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -41,11 +39,7 @@ func Login(c *deis.Client, username, password string) (string, error) {
 	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
 		return "", reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	token := api.AuthLoginResponse{}
 	if err = json.NewDecoder(res.Body).Decode(&token); err != nil {
@@ -105,11 +99,7 @@ func Regenerate(c *deis.Client, username string, all bool) (string, error) {
 	if err != nil && !deis.IsErrAPIMismatch(reqErr) {
 		return "", reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	if all {
 		return "", nil
@@ -155,11 +145,7 @@ func Whoami(c *deis.Client) (api.User, error) {
 	if err != nil {
 		return api.User{}, err
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	resUser := api.User{}
 	if err = json.NewDecoder(res.Body).Decode(&resUser); err != nil {

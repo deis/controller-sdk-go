@@ -4,8 +4,6 @@ package domains
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -44,11 +42,7 @@ func New(c *deis.Client, appID string, domain string) (api.Domain, error) {
 	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
 		return api.Domain{}, reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	d := api.Domain{}
 	if err = json.NewDecoder(res.Body).Decode(&d); err != nil {

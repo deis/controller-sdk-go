@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"strconv"
 
@@ -58,11 +57,7 @@ func New(c *deis.Client, appID string) (api.App, error) {
 	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
 		return api.App{}, reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	app := api.App{}
 	if err := json.NewDecoder(res.Body).Decode(&app); err != nil {
@@ -80,11 +75,7 @@ func Get(c *deis.Client, appID string) (api.App, error) {
 	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
 		return api.App{}, reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	app := api.App{}
 

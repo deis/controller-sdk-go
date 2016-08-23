@@ -6,8 +6,6 @@ package hooks
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 
 	"github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -20,11 +18,7 @@ func UserFromKey(c *deis.Client, fingerprint string) (api.UserApps, error) {
 		return api.UserApps{}, reqErr
 	}
 
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	resUser := api.UserApps{}
 	if err := json.NewDecoder(res.Body).Decode(&resUser); err != nil {
@@ -46,11 +40,7 @@ func GetAppConfig(c *deis.Client, username, app string) (api.Config, error) {
 	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
 		return api.Config{}, reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	config := api.Config{}
 	if err := json.NewDecoder(res.Body).Decode(&config); err != nil {
@@ -86,11 +76,7 @@ func CreateBuild(c *deis.Client, username, app, image, gitSha string, procfile a
 	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
 		return -1, reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	resMap := make(map[string]map[string]int)
 	if err := json.NewDecoder(res.Body).Decode(&resMap); err != nil {

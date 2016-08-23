@@ -4,8 +4,6 @@ package keys
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -38,11 +36,7 @@ func New(c *deis.Client, id string, pubKey string) (api.Key, error) {
 	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
 		return api.Key{}, reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	key := api.Key{}
 	if err = json.NewDecoder(res.Body).Decode(&key); err != nil {

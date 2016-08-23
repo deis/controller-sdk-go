@@ -4,8 +4,6 @@ package perms
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
@@ -17,11 +15,7 @@ func List(c *deis.Client, appID string) ([]string, error) {
 	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
 		return []string{}, reqErr
 	}
-	// Fix json.Decoder bug in <go1.7
-	defer func() {
-		io.Copy(ioutil.Discard, res.Body)
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	var users api.PermsAppResponse
 	if err := json.NewDecoder(res.Body).Decode(&users); err != nil {
