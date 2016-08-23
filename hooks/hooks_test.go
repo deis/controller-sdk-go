@@ -111,27 +111,6 @@ func (fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if req.URL.Path == "/v2/hooks/push/" && req.Method == "POST" {
-		body, err := ioutil.ReadAll(req.Body)
-
-		if err != nil {
-			fmt.Println(err)
-			res.WriteHeader(http.StatusInternalServerError)
-			res.Write(nil)
-		}
-
-		if string(body) != pushHookExpected {
-			fmt.Printf("Expected '%s', Got '%s'\n", pushHookExpected, body)
-			res.WriteHeader(http.StatusInternalServerError)
-			res.Write(nil)
-			return
-		}
-
-		res.WriteHeader(http.StatusCreated)
-		res.Write([]byte(nil))
-		return
-	}
-
 	fmt.Printf("Unrecongized URL %s\n", req.URL)
 	res.WriteHeader(http.StatusNotFound)
 	res.Write(nil)
@@ -234,24 +213,5 @@ func TestBuildHook(t *testing.T) {
 
 	if !reflect.DeepEqual(expected, actual) {
 		t.Errorf("Expected %v, Got %v", expected, actual)
-	}
-}
-
-func TestPushHook(t *testing.T) {
-	t.Parallel()
-
-	handler := fakeHTTPServer{}
-	server := httptest.NewServer(&handler)
-	defer server.Close()
-
-	deis, err := deis.New(false, server.URL, "abc")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = CreatePush(deis, "test", "example-go", "abc123", "testing", "1234", "foo")
-
-	if err != nil {
-		t.Error(err)
 	}
 }

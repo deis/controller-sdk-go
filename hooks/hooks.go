@@ -99,27 +99,3 @@ func CreateBuild(c *deis.Client, username, app, image, gitSha string, procfile a
 
 	return resMap["release"]["version"], reqErr
 }
-
-// CreatePush creates a new push for an application.
-// gitSha should be the first 8 charecters of the git commit sha.
-func CreatePush(c *deis.Client, username, app, gitSha, fingerprint, conn, cmd string) error {
-	req := api.PushRequest{
-		Sha:         gitSha,
-		User:        username,
-		App:         app,
-		Fingerprint: fingerprint,
-		Connection:  conn,
-		Command:     cmd,
-	}
-
-	b, err := json.Marshal(req)
-	if err != nil {
-		return err
-	}
-
-	res, reqErr := c.Request("POST", "/v2/hooks/push/", b)
-	if reqErr == nil {
-		res.Body.Close()
-	}
-	return reqErr
-}
