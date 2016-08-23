@@ -1,6 +1,11 @@
 # the filepath to this repository, relative to $GOPATH/src
 repo_path = github.com/deis/controller-sdk-go
 
+REVISION ?= $(shell git rev-parse --short HEAD)
+REGISTRY ?= quay.io/
+IMAGE_PREFIX ?= deisci
+IMAGE := ${REGISTRY}${IMAGE_PREFIX}/controller-sdk-go-dev:${REVISION}
+
 DEV_ENV_IMAGE := quay.io/deis/go-dev:0.16.0
 DEV_ENV_WORK_DIR := /go/src/${repo_path}
 DEV_ENV_PREFIX := docker run --rm -e CGO_ENABLED=0 -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR}
@@ -19,17 +24,13 @@ bootstrap:
 glideup:
 	${DEV_ENV_CMD} glide up
 
-test: test-style test-unit
+test-style: build-test-image
+	docker run --rm ${IMAGE} lint
 
-test-style:
-	${DEV_ENV_CMD} lint
+test: build-test-image
+	docker run --rm ${IMAGE} test
 
-test-unit:
-	${DEV_ENV_PREFIX_CGO_ENABLED} ${DEV_ENV_IMAGE} sh -c '${GOTEST} $$(glide nv)'
+build-test-image:
+	docker build -t ${IMAGE} .
 
-test-cover: test-style
-	${DEV_ENV_PREFIX_CGO_ENABLED} ${DEV_ENV_IMAGE} test-cover.sh
-
-# Set local user as owner for files
-fileperms:
-	${DEV_ENV_PREFIX_CGO_ENABLED} ${DEV_ENV_IMAGE} chown -R ${UID}:${GID} .
+push-test-image: build-test-image

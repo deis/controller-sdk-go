@@ -1,24 +1,3 @@
-def workpath_linux_root = "/src/github.com/deis"
-
-def make = { String target ->
-	try {
-		sh "make ${target} fileperms"
-	} catch(error) {
-		sh 'make fileperms'
-		throw error
-	}
-}
-
-def gopath_linux = {
-	def gopath = pwd() + "/gopath"
-	env.GOPATH = gopath
-	gopath
-}
-
-def workdir_linux = { String gopath, dest ->
-	gopath + workpath_linux_root + "/" + dest
-}
-
 def sh = { String cmd ->
 	wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {
 		sh cmd
@@ -44,129 +23,130 @@ node('windows') {
 	}
 }
 
-node('linux') {
-	def gopath = gopath_linux()
-	def workdir = workdir_linux(gopath, "controller-sdk-go")
-
-	dir(workdir) {
-		stage 'Checkout Linux'
-			checkout scm
-		stage 'Install Linux'
-			make 'bootstrap'
-		stage 'Test Linux'
-			make 'test-style'
-			make 'test-cover'
-		stage 'Upload to Codecov'
-			withCredentials([[$class: 'StringBinding', credentialsId: '2da033eb-2e34-4efd-b090-ad892f348065', variable: 'CODECOV_TOKEN']]) {
-				sh 'curl -s https://codecov.io/bash | bash'
-			}
-	}
-}
-
 def git_commit = ''
 def git_branch = ''
-def go_repo = ''
 
 stage 'Go & Git Info'
 node('linux') {
+	checkout scm
+	// HACK: Recommended approach for getting command output is writing to and then reading a file.
+	sh 'mkdir -p tmp'
+	sh 'git describe --all > tmp/GIT_BRANCH'
+	sh 'git rev-parse HEAD > tmp/GIT_COMMIT'
+	git_branch = readFile('tmp/GIT_BRANCH').trim()
+	git_commit = readFile('tmp/GIT_COMMIT').trim()
 
-	def gopath = gopath_linux()
-	def workdir = workdir_linux(gopath, "controller-sdk-go")
-
-	dir(workdir) {
-		checkout scm
-
-		// HACK: Recommended approach for getting command output is writing to and then reading a file.
-		sh 'mkdir -p tmp'
-		sh 'git describe --all > tmp/GIT_BRANCH'
-		sh 'git rev-parse HEAD > tmp/GIT_COMMIT'
-		sh 'go list . > tmp/GO_LIST'
-		git_branch = readFile('tmp/GIT_BRANCH').trim()
-		git_commit = readFile('tmp/GIT_COMMIT').trim()
-		go_repo = readFile('tmp/GO_LIST').trim()
-
-		if (git_branch != "remotes/origin/master") {
-			// Determine actual PR commit, if necessary
-			sh 'git rev-parse HEAD | git log --pretty=%P -n 1 --date-order > tmp/MERGE_COMMIT_PARENTS'
-			sh 'cat tmp/MERGE_COMMIT_PARENTS'
-			merge_commit_parents = readFile('tmp/MERGE_COMMIT_PARENTS').trim()
-			if (merge_commit_parents.length() > 40) {
-				echo 'More than one merge commit parent signifies that the merge commit is not the PR commit'
-				echo "Changing git_commit from '${git_commit}' to '${merge_commit_parents.take(40)}'"
-				git_commit = merge_commit_parents.take(40)
-			} else {
-				echo 'Only one merge commit parent signifies that the merge commit is also the PR commit'
-				echo "Keeping git_commit as '${git_commit}'"
-			}
-			// convert 'github.com/deis/controller-sdk-go' to 'github.com/${env.CHANGE_AUTHOR}/controller-sdk-go'
-			go_repo = go_repo.replace('deis', env.CHANGE_AUTHOR)
+	if (git_branch != "remotes/origin/master") {
+		// Determine actual PR commit, if necessary
+		sh 'git rev-parse HEAD | git log --pretty=%P -n 1 --date-order > tmp/MERGE_COMMIT_PARENTS'
+		sh 'cat tmp/MERGE_COMMIT_PARENTS'
+		merge_commit_parents = readFile('tmp/MERGE_COMMIT_PARENTS').trim()
+		if (merge_commit_parents.length() > 40) {
+			echo 'More than one merge commit parent signifies that the merge commit is not the PR commit'
+			echo "Changing git_commit from '${git_commit}' to '${merge_commit_parents.take(40)}'"
+			git_commit = merge_commit_parents.take(40)
+		} else {
+			echo 'Only one merge commit parent signifies that the merge commit is also the PR commit'
+			echo "Keeping git_commit as '${git_commit}'"
 		}
 	}
 }
 
-stage 'Checkout workflow-cli repo and build/deploy with appropriate updates'
+def test_image = "quay.io/deisci/controller-sdk-go-dev:${git_commit.take(7)}"
+
 node('linux') {
-	def repo = "workflow-cli"
-	def gopath = gopath_linux()
-	def workdir = workdir_linux(gopath, repo)
+		stage 'Build and push test container'
+			checkout scm
+			def quayUsername = "deisci+jenkins"
+			def quayEmail = "deis+jenkins@deis.com"
+			withCredentials([[$class: 'StringBinding',
+												credentialsId: 'c67dc0a1-c8c4-4568-a73d-53ad8530ceeb',
+									 			variable: 'QUAY_PASSWORD']]) {
 
-	def getBasePath = { String filepath ->
-		def filename = filepath.lastIndexOf(File.separator)
-		return filepath.substring(0, filename)
-	}
+				sh """
+					docker login -e="${quayEmail}" -u="${quayUsername}" -p="\${QUAY_PASSWORD}" quay.io
+					docker build -t ${test_image} .
+					docker push ${test_image}
+				"""
+			}
+}
 
-	def gcs_cleanup_cmd = "sh -c 'rm -rf /.config/*'"
-	def gcs_bucket = "gs://workflow-cli"
-	def gcs_key = "tmp/key.json"
-
-	def gcs_cmd = { String cmd ->
-		gcs_cmd = "docker run --rm -v  ${pwd()}/tmp:/.config -v ${pwd()}/_dist:/upload google/cloud-sdk:latest "
-		try {
-			sh(gcs_cmd + cmd)
-		} catch(error) {
-			sh(gcs_cmd + gcs_cleanup_cmd)
-			throw error
+stage 'Lint and test container'
+parallel(
+	lint: {
+		node('linux') {
+			sh "docker run --rm ${test_image} lint"
+		}
+	},
+	test: {
+		node('linux') {
+			withCredentials([[$class: 'StringBinding',
+												credentialsId: '2da033eb-2e34-4efd-b090-ad892f348065',
+												variable: 'CODECOV_TOKEN']]) {
+				sh "docker run -e CODECOV_TOKEN=\${CODECOV_TOKEN} --rm ${test_image} sh -c 'test-cover.sh && curl -s https://codecov.io/bash | bash'"
+			}
 		}
 	}
+)
 
-	def upload_artifacts = {
-		withCredentials([[$class: 'FileBinding', credentialsId: 'e80fd033-dd76-4d96-be79-6c272726fb82', variable: 'GCSKEY']]) {
-			sh "mkdir -p ${getBasePath(gcs_key)}"
-			sh "cat \"\${GCSKEY}\" > ${gcs_key}"
-			gcs_cmd 'gcloud auth activate-service-account -q --key-file /.config/key.json'
-			gcs_cmd "gsutil -mq cp -a public-read -r /upload/* ${gcs_bucket}"
-			gcs_cmd gcs_cleanup_cmd
-		}
+stage 'Build and Upload CLI built with SDK'
+
+def gcs_bucket = "gs://workflow-cli"
+def wcli_image = 'quay.io/deisci/workflow-cli-dev:latest'
+
+
+def upload_artifacts = { String dist_dir ->
+	headers  = "-h 'x-goog-meta-git-branch:${git_branch}' "
+	headers += "-h 'x-goog-meta-git-sha:${git_commit}' "
+	headers += "-h 'x-goog-meta-ci-job:${env.JOB_NAME}' "
+	headers += "-h 'x-goog-meta-ci-number:${env.BUILD_NUMBER}' "
+	headers += "-h 'x-goog-meta-ci-url:${env.BUILD_URL}'"
+
+	script = "sh -c 'echo \${GCS_KEY_JSON} | base64 -d - > /tmp/key.json "
+	script += "&& gcloud auth activate-service-account -q --key-file /tmp/key.json "
+	script += "&& gsutil -mq ${headers} cp -a public-read -r /upload/* ${gcs_bucket} "
+	script += "&& rm -rf /upload/*'"
+
+	withCredentials([[$class: 'StringBinding',
+										credentialsId: '6561701c-b7b4-4796-83c4-9d87946799e4',
+										variable: 'GCSKEY']]) {
+		sh "docker run ${dist_dir} -e GCS_KEY_JSON=\"\${GCSKEY}\" --rm ${wcli_image} ${script}"
+	}
+}
+
+def mktmp = {
+	// Create tmp directory to store files
+	sh 'mktemp -d > tmp_dir'
+	tmp = readFile('tmp_dir').trim()
+	echo "Storing binaries in ${tmp}"
+	sh 'rm tmp_dir'
+	return tmp
+}
+
+node('linux') {
+	flags = ""
+	if (git_branch != "remotes/origin/master") {
+		echo "Skipping build of 386 binaries to shorten CI for Pull Requests"
+		flags += "-e BUILD_ARCH=amd64"
 	}
 
-	dir(workdir) {
-		stage "Checkout ${repo}"
-		git url: "https://github.com/deis/${repo}.git", branch: "master"
+	tmp_dir = mktmp()
+	dist_dir = "-e DIST_DIR=/upload -v ${tmp_dir}:/upload"
 
-		stage "Build ${repo}"
-		if (git_branch != "remotes/origin/master") {
-			echo "Skipping build of 386 binaries to shorten CI for Pull Requests"
-			env.BUILD_ARCH = "amd64"
-		}
-		make 'bootstrap'
+	def pattern = "github\\.com\\/deis\\/controller-sdk-go\\n\\s+version:\\s+[a-f0-9]+"
+	replacement = "github\\.com\\/deis\\/controller-sdk-go\\n"
+	replacement += "  repo: https:\\/\\/github\\.com\\/${env.CHANGE_AUTHOR}\\/controller-sdk-go\\.git\\n"
+	replacement += "  vcs: git\\n"
+	replacement += "  version: ${git_commit}"
 
-		stage "Update local glide.yaml with controller-sdk-go repo '${go_repo}' and version '${git_commit}'"
+	build_script = "sh -c 'perl -i -0pe \"s/${pattern}/${replacement}/\" glide.yaml "
+	build_script += "&& rm -rf glide.lock vendor/github.com/deis/controller-sdk-go "
+	build_script += "&& glide install "
+	build_script += "&& make build-revision'"
+	sh "docker run ${flags} -e REVISION=${git_commit.take(7)} ${dist_dir} --rm ${wcli_image} ${build_script}"
 
-		def pattern = "github\\.com\\/deis\\/controller-sdk-go\\n\\s+version:\\s+[a-f0-9]+"
-		def replacement = "${go_repo.replace("/", "\\/")}\\n  version: ${git_commit}"
-		sh "perl -i -0pe 's/${pattern}/${replacement}/' glide.yaml"
-
-		def glideYaml = readFile('glide.yaml')
-		echo "Updated glide.yaml:\n${glideYaml}"
-
-		make 'glideup'
-		env.REVISION = git_commit.take(7)
-		env.VERSION = "csdk-ci-" + git_commit.take(7)
-		make 'build-revision'
-
-		stage "Deploy ${repo}"
-		upload_artifacts()
-	}
+	upload_artifacts(dist_dir)
+	sh "rm -rf ${tmp_dir}"
 }
 
 stage 'Trigger e2e tests'
@@ -193,7 +173,7 @@ waitUntil {
 <div>Author: ${env.CHANGE_AUTHOR}<br/>
 Branch: ${env.BRANCH_NAME}<br/>
 Commit: ${env.CHANGE_TITLE}<br/>
-<p><a href="${env.BUILD_URL}console/">Click here</a> to view build logs.</p>
+<p><a href="${env.BUILD_URL}console">Click here</a> to view build logs.</p>
 <p><a href="${env.BUILD_URL}input/">Click here</a> to restart e2e.</p>
 </div>
 </html>
