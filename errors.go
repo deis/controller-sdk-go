@@ -15,7 +15,7 @@ const (
 	jsonParsingError = "error decoding json response (%s): %s"
 
 	// fieldReqMsg is API error stating a field is required.
-	fieldReqMsg           = "This field is required."
+	fieldReqMsg           = "This field may not be blank."
 	invalidUserMsg        = "Enter a valid username. This value may contain only letters, numbers and @/./+/-/_ characters."
 	failedLoginMsg        = "Unable to log in with provided credentials."
 	invalidAppNameMsg     = "App name can only contain a-z (lowercase), 0-9 and hyphens"

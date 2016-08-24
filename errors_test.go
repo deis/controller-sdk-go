@@ -64,7 +64,7 @@ func TestErrors(t *testing.T) {
 		{
 			res: &http.Response{
 				StatusCode: 400,
-				Body:       readCloser(`{"username":["This field is required."]}`),
+				Body:       readCloser(`{"username":["This field may not be blank."]}`),
 			},
 			expected: ErrInvalidUsername,
 		},
@@ -85,7 +85,7 @@ func TestErrors(t *testing.T) {
 		{
 			res: &http.Response{
 				StatusCode: 400,
-				Body:       readCloser(`{"password":["This field is required."]}`),
+				Body:       readCloser(`{"password":["This field may not be blank."]}`),
 			},
 			expected: ErrMissingPassword,
 		},
@@ -113,7 +113,7 @@ func TestErrors(t *testing.T) {
 		{
 			res: &http.Response{
 				StatusCode: 400,
-				Body:       readCloser(`{"certificate": ["This field is required."]}`),
+				Body:       readCloser(`{"certificate": ["This field may not be blank."]}`),
 			},
 			expected: ErrInvalidCertificate,
 		},
@@ -127,7 +127,7 @@ func TestErrors(t *testing.T) {
 		{
 			res: &http.Response{
 				StatusCode: 400,
-				Body:       readCloser(`{"key": ["This field is required."]}`),
+				Body:       readCloser(`{"key": ["This field may not be blank."]}`),
 			},
 			expected: ErrMissingKey,
 		},
@@ -148,14 +148,14 @@ func TestErrors(t *testing.T) {
 		{
 			res: &http.Response{
 				StatusCode: 400,
-				Body:       readCloser(`{"public":["This field is required."]}`),
+				Body:       readCloser(`{"public":["This field may not be blank."]}`),
 			},
 			expected: ErrMissingKey,
 		},
 		{
 			res: &http.Response{
 				StatusCode: 400,
-				Body:       readCloser(`{"name": ["This field is required."]}`),
+				Body:       readCloser(`{"name": ["This field may not be blank."]}`),
 			},
 			expected: ErrInvalidName,
 		},
@@ -190,7 +190,7 @@ func TestErrors(t *testing.T) {
 		{
 			res: &http.Response{
 				StatusCode: 400,
-				Body:       readCloser(`{"image":["This field is required."]}`),
+				Body:       readCloser(`{"image":["This field may not be blank."]}`),
 			},
 			expected: ErrInvalidImage,
 		},
@@ -204,7 +204,7 @@ func TestErrors(t *testing.T) {
 		{
 			res: &http.Response{
 				StatusCode: 400,
-				Body:       readCloser(`{"id":["This field is required."]}`),
+				Body:       readCloser(`{"id":["This field may not be blank."]}`),
 			},
 			expected: ErrMissingID,
 		},
