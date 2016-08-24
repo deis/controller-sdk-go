@@ -91,7 +91,7 @@ parallel(
 
 stage 'Build and Upload CLI built with SDK'
 
-def gcs_bucket = "gs://workflow-cli"
+def gcs_bucket = "gs://workflow-cli-pr"
 def wcli_image = 'quay.io/deisci/workflow-cli-dev:latest'
 
 
@@ -108,7 +108,7 @@ def upload_artifacts = { String dist_dir ->
 	script += "&& rm -rf /upload/*'"
 
 	withCredentials([[$class: 'StringBinding',
-										credentialsId: '6561701c-b7b4-4796-83c4-9d87946799e4',
+										credentialsId: '6029cf4e-eaa3-4a8e-9dc7-744d118ebe6a',
 										variable: 'GCSKEY']]) {
 		sh "docker run ${dist_dir} -e GCS_KEY_JSON=\"\${GCSKEY}\" --rm ${wcli_image} ${script}"
 	}
