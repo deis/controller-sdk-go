@@ -16,11 +16,17 @@ type AppSettings struct {
 	// Maintenance determines if the application is taken down for maintenance or not.
 	Maintenance *bool `json:"maintenance,omitempty"`
 	// Routable determines if the application should be exposed by the router.
-	Routable *bool `json:"routable,omitempty"`
+	Routable  *bool    `json:"routable,omitempty"`
+	Whitelist []string `json:"whitelist,omitempty"`
 }
 
 // NewRoutable returns a default value for the AppSettings.Routable field.
 func NewRoutable() *bool {
 	b := true
 	return &b
+}
+
+// Whitelist is the structure of POST /v2/app/<app id>/whitelist/.
+type Whitelist struct {
+	Addresses []string `json:"addresses"`
 }
