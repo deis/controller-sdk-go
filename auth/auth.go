@@ -96,7 +96,7 @@ func Regenerate(c *deis.Client, username string, all bool) (string, error) {
 	}
 
 	res, reqErr := c.Request("POST", "/v2/auth/tokens/", reqBody)
-	if err != nil && !deis.IsErrAPIMismatch(reqErr) {
+	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
 		return "", reqErr
 	}
 	defer res.Body.Close()
