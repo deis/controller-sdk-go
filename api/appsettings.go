@@ -1,5 +1,10 @@
 package api
 
+import (
+	"bytes"
+	"text/template"
+)
+
 // AppSettings is the structure of an app's settings.
 type AppSettings struct {
 	// Owner is the app owner. It cannot be updated with AppSettings.Set(). See app.Transfer().
@@ -16,8 +21,9 @@ type AppSettings struct {
 	// Maintenance determines if the application is taken down for maintenance or not.
 	Maintenance *bool `json:"maintenance,omitempty"`
 	// Routable determines if the application should be exposed by the router.
-	Routable  *bool    `json:"routable,omitempty"`
-	Whitelist []string `json:"whitelist,omitempty"`
+	Routable  *bool                 `json:"routable,omitempty"`
+	Whitelist []string              `json:"whitelist,omitempty"`
+	Autoscale map[string]*Autoscale `json:"autoscale,omitempty"`
 }
 
 // NewRoutable returns a default value for the AppSettings.Routable field.
@@ -29,4 +35,29 @@ func NewRoutable() *bool {
 // Whitelist is the structure of POST /v2/app/<app id>/whitelist/.
 type Whitelist struct {
 	Addresses []string `json:"addresses"`
+}
+
+// String displays the Autoscale rule in a readable format.
+func (a Autoscale) String() string {
+	var doc bytes.Buffer
+	tmpl, err := template.New("autoscale").Parse(`Min Replicas: {{.Min}}
+Max Replicas: {{.Max}}
+CPU: {{.CPUPercent}}%`)
+	if err != nil {
+		panic(err)
+	}
+	if err := tmpl.Execute(&doc, a); err != nil {
+		panic(err)
+	}
+	return doc.String()
+}
+
+// Autoscales contains a hash of process types and the autoscale rules
+type Autoscales map[string]*Autoscale
+
+// Autoscale is a per proc type scaling information
+type Autoscale struct {
+	Min        int `json:"min"`
+	Max        int `json:"max"`
+	CPUPercent int `json:"cpu_percent"`
 }

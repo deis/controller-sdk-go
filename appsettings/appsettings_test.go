@@ -19,6 +19,7 @@ const appSettingsFixture string = `
     "maintenance": true,
     "routable": true,
     "whitelist": ["1.2.3.4", "0.0.0.0/0"],
+    "autoscale": {"cmd": {"min": 3, "max": 8, "cpu_percent": 40}},
     "created": "2014-01-01T00:00:00UTC",
     "updated": "2014-01-01T00:00:00UTC",
     "uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75"
@@ -29,17 +30,18 @@ const appSettingsUnsetFixture string = `
 {
     "owner": "test",
     "app": "unset-test",
-	  "maintenance": true,
+    "maintenance": true,
     "routable": true,
     "whitelist": ["1.2.3.4", "0.0.0.0/0"],
+    "autoscale": {"cmd": {"min": 3, "max": 8, "cpu_percent": 40}},
     "created": "2014-01-01T00:00:00UTC",
     "updated": "2014-01-01T00:00:00UTC",
     "uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75"
 }
 `
 
-const appSettingsSetExpected string = `{"maintenance":true,"routable":true,"whitelist":["1.2.3.4","0.0.0.0/0"]}`
-const appSettingsUnsetExpected string = `{"maintenance":true,"routable":true,"whitelist":["1.2.3.4","0.0.0.0/0"]}`
+const appSettingsSetExpected string = `{"maintenance":true,"routable":true,"whitelist":["1.2.3.4","0.0.0.0/0"],"autoscale":{"cmd":{"min":3,"max":8,"cpu_percent":40}}}`
+const appSettingsUnsetExpected string = `{"maintenance":true,"routable":true,"whitelist":["1.2.3.4","0.0.0.0/0"],"autoscale":{"cmd":{"min":3,"max":8,"cpu_percent":40}}}`
 
 var trueVar = true
 
@@ -129,15 +131,29 @@ func TestAppSettingsSet(t *testing.T) {
 		Routable:    api.NewRoutable(),
 		Maintenance: &trueVar,
 		Whitelist:   []string{"1.2.3.4", "0.0.0.0/0"},
-		Created:     "2014-01-01T00:00:00UTC",
-		Updated:     "2014-01-01T00:00:00UTC",
-		UUID:        "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
+		Autoscale: map[string]*api.Autoscale{
+			"cmd": {
+				Min:        3,
+				Max:        8,
+				CPUPercent: 40,
+			},
+		},
+		Created: "2014-01-01T00:00:00UTC",
+		Updated: "2014-01-01T00:00:00UTC",
+		UUID:    "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
 	}
 
 	appSettingsVars := api.AppSettings{
 		Maintenance: &trueVar,
 		Routable:    api.NewRoutable(),
 		Whitelist:   []string{"1.2.3.4", "0.0.0.0/0"},
+		Autoscale: map[string]*api.Autoscale{
+			"cmd": {
+				Min:        3,
+				Max:        8,
+				CPUPercent: 40,
+			},
+		},
 	}
 
 	actual, err := Set(deis, "example-go", appSettingsVars)
@@ -169,15 +185,29 @@ func TestAppSettingsUnset(t *testing.T) {
 		Maintenance: &trueVar,
 		Routable:    api.NewRoutable(),
 		Whitelist:   []string{"1.2.3.4", "0.0.0.0/0"},
-		Created:     "2014-01-01T00:00:00UTC",
-		Updated:     "2014-01-01T00:00:00UTC",
-		UUID:        "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
+		Autoscale: map[string]*api.Autoscale{
+			"cmd": {
+				Min:        3,
+				Max:        8,
+				CPUPercent: 40,
+			},
+		},
+		Created: "2014-01-01T00:00:00UTC",
+		Updated: "2014-01-01T00:00:00UTC",
+		UUID:    "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
 	}
 
 	appSettingsVars := api.AppSettings{
 		Maintenance: &trueVar,
 		Routable:    api.NewRoutable(),
 		Whitelist:   []string{"1.2.3.4", "0.0.0.0/0"},
+		Autoscale: map[string]*api.Autoscale{
+			"cmd": {
+				Min:        3,
+				Max:        8,
+				CPUPercent: 40,
+			},
+		},
 	}
 
 	actual, err := Set(deis, "unset-test", appSettingsVars)
@@ -209,9 +239,16 @@ func TestAppSettingsList(t *testing.T) {
 		Maintenance: &trueVar,
 		Routable:    api.NewRoutable(),
 		Whitelist:   []string{"1.2.3.4", "0.0.0.0/0"},
-		Created:     "2014-01-01T00:00:00UTC",
-		Updated:     "2014-01-01T00:00:00UTC",
-		UUID:        "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
+		Autoscale: map[string]*api.Autoscale{
+			"cmd": {
+				Min:        3,
+				Max:        8,
+				CPUPercent: 40,
+			},
+		},
+		Created: "2014-01-01T00:00:00UTC",
+		Updated: "2014-01-01T00:00:00UTC",
+		UUID:    "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
 	}
 
 	actual, err := List(deis, "example-go")
