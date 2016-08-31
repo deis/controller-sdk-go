@@ -4,13 +4,14 @@ package ps
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 
 	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
 )
 
 // List lists an app's processes.
-func List(c *deis.Client, appID string, results int) ([]api.Pods, int, error) {
+func List(c *deis.Client, appID string, results int) (api.PodsList, int, error) {
 	u := fmt.Sprintf("/v2/apps/%s/pods/", appID)
 	body, count, reqErr := c.LimitedRequest(u, results)
 	if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
@@ -46,7 +47,7 @@ func Scale(c *deis.Client, appID string, targets map[string]int) error {
 // Restart restarts an app's processes. To restart all app processes, pass empty strings for
 // procType and name. To restart an specific process, pass an procType by leave name empty.
 // To restart a specific instance, pass a procType and a name.
-func Restart(c *deis.Client, appID string, procType string, name string) ([]api.Pods, error) {
+func Restart(c *deis.Client, appID string, procType string, name string) (api.PodsList, error) {
 	u := fmt.Sprintf("/v2/apps/%s/pods/", appID)
 
 	if procType == "" {
@@ -74,13 +75,36 @@ func Restart(c *deis.Client, appID string, procType string, name string) ([]api.
 }
 
 // ByType organizes processes of an app by process type.
-// The key will be the process name, and the array will be all the pods of that type.
-func ByType(processes []api.Pods) map[string][]api.Pods {
-	psMap := make(map[string][]api.Pods)
+func ByType(processes api.PodsList) api.PodTypes {
+	var pts api.PodTypes
 
-	for _, ps := range processes {
-		psMap[ps.Type] = append(psMap[ps.Type], ps)
+	for _, process := range processes {
+		exists := false
+		// Is processtype for process already exists, append to it.
+		for i, pt := range pts {
+			if pt.Type == process.Type {
+				exists = true
+				pts[i].PodsList = append(pts[i].PodsList, process)
+				break
+			}
+		}
+
+		// Is processtype for process doesn't exist, create a new one
+		if !exists {
+			pts = append(pts, api.PodType{
+				Type:     process.Type,
+				PodsList: api.PodsList{process},
+			})
+		}
 	}
 
-	return psMap
+	// Sort the pods alphabetically by name.
+	for _, pt := range pts {
+		sort.Sort(pt.PodsList)
+	}
+
+	// Sort ProcessTypes alphabetically by process name
+	sort.Sort(pts)
+
+	return pts
 }

@@ -125,7 +125,7 @@ func TestProcessesList(t *testing.T) {
 
 	started := time.Time{}
 	started.UnmarshalText([]byte("2016-02-13T00:47:52"))
-	expected := []api.Pods{
+	expected := api.PodsList{
 		{
 			Release: "v2",
 			Type:    "web",
@@ -158,7 +158,7 @@ func TestProcessesList(t *testing.T) {
 type testExpected struct {
 	Name     string
 	Type     string
-	Expected []api.Pods
+	Expected api.PodsList
 }
 
 func TestAppsRestart(t *testing.T) {
@@ -257,5 +257,57 @@ func TestScale(t *testing.T) {
 
 	if err = Scale(deis, "example-go", map[string]int{"web": 2}); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestByType(t *testing.T) {
+	t.Parallel()
+
+	started := time.Time{}
+	started.UnmarshalText([]byte("2016-02-13T00:47:52"))
+
+	expected := api.PodTypes{
+		{
+			Type: "abc",
+			PodsList: api.PodsList{
+				{Type: "abc", Name: "1", Started: started},
+				{Type: "abc", Name: "2", Started: started},
+				{Type: "abc", Name: "3", Started: started},
+			},
+		},
+		{
+			Type: "web",
+			PodsList: api.PodsList{
+				{Type: "web", Name: "test1", Started: started},
+				{Type: "web", Name: "test2", Started: started},
+				{Type: "web", Name: "test3", Started: started},
+			},
+		},
+		{
+			Type: "worker",
+			PodsList: api.PodsList{
+				{Type: "worker", Name: "a", Started: started},
+				{Type: "worker", Name: "b", Started: started},
+				{Type: "worker", Name: "c", Started: started},
+			},
+		},
+	}
+
+	input := api.PodsList{
+		{Type: "worker", Name: "c", Started: started},
+		{Type: "abc", Name: "2", Started: started},
+		{Type: "worker", Name: "b", Started: started},
+		{Type: "web", Name: "test1", Started: started},
+		{Type: "web", Name: "test3", Started: started},
+		{Type: "abc", Name: "1", Started: started},
+		{Type: "worker", Name: "a", Started: started},
+		{Type: "abc", Name: "3", Started: started},
+		{Type: "web", Name: "test2", Started: started},
+	}
+
+	actual := ByType(input)
+
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("Expected: %v, Got %v", expected, actual)
 	}
 }
