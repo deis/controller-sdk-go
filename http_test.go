@@ -179,8 +179,8 @@ func TestBasicRequest(t *testing.T) {
 		t.Errorf("Expected %s, Got %s", handler.Version, deis.ControllerAPIVersion)
 	}
 
-	if deis.DeisVersion != handler.PlatformVersion {
-		t.Errorf("Expected %s, Got %s", handler.PlatformVersion, deis.DeisVersion)
+	if deis.ControllerVersion != handler.PlatformVersion {
+		t.Errorf("Expected %s, Got %s", handler.PlatformVersion, deis.ControllerVersion)
 	}
 
 	// Make sure the request doesn't modify the URL

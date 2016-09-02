@@ -67,7 +67,7 @@ func (c *Client) Request(method string, path string, body []byte) (*http.Respons
 
 	// Update controller api and platform version
 	c.ControllerAPIVersion = apiVersion
-	c.DeisVersion = res.Header.Get("DEIS_PLATFORM_VERSION")
+	setControllerVersion(c, res.Header)
 
 	// Return results along with api compatibility error
 	return res, checkAPICompatibility(apiVersion, APIVersion)
@@ -131,6 +131,7 @@ your deis version is correct.`
 	// Update controller api version
 	apiVersion := res.Header.Get("DEIS_API_VERSION")
 	c.ControllerAPIVersion = apiVersion
+	setControllerVersion(c, res.Header)
 
 	return checkAPICompatibility(apiVersion, APIVersion)
 }
@@ -159,10 +160,15 @@ func (c *Client) Healthcheck() error {
 	// Update controller api version
 	apiVersion := res.Header.Get("DEIS_API_VERSION")
 	c.ControllerAPIVersion = apiVersion
+	setControllerVersion(c, res.Header)
 
 	return checkAPICompatibility(apiVersion, APIVersion)
 }
 
 func addUserAgent(headers *http.Header, userAgent string) {
 	headers.Add("User-Agent", userAgent)
+}
+
+func setControllerVersion(c *Client, headers http.Header) {
+	c.ControllerVersion = headers.Get("DEIS_PLATFORM_VERSION")
 }

@@ -77,8 +77,8 @@ type Client struct {
 	// API Version used by the controller, set after a http request.
 	ControllerAPIVersion string
 
-	// Version of the deis platform in use, set after a http request.
-	DeisVersion string
+	// Version of the deis controller in use, set after a http request.
+	ControllerVersion string
 
 	// Token is used to authenticate the request against the API.
 	Token string
