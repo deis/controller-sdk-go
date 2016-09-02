@@ -1,5 +1,6 @@
 # Controller Go SDK
 [![Build Status](https://ci.deis.io/buildStatus/icon?job=Deis/controller-sdk-go/master)](https://ci.deis.io/job/Deis/job/controller-sdk-go/job/master/)
+[![codecov](https://codecov.io/gh/deis/controller-sdk-go/branch/master/graph/badge.svg)](https://codecov.io/gh/deis/controller-sdk-go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/deis/controller-sdk-go)](https://goreportcard.com/report/github.com/deis/controller-sdk-go)
 [![codebeat badge](https://codebeat.co/badges/2fdee091-714d-4860-ab19-dba7587a3158)](https://codebeat.co/projects/github-com-deis-controller-sdk-go)
 [![GoDoc](https://godoc.org/github.com/deis/controller-sdk-go?status.svg)](https://godoc.org/github.com/deis/controller-sdk-go)
