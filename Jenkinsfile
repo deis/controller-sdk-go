@@ -119,26 +119,29 @@ def mktmp = {
 }
 
 node('linux') {
-	flags = ""
+	def author = "deis"
+	def flags = ""
+	
 	if (git_branch != "remotes/origin/master") {
+		author = env.CHANGE_AUTHOR
 		echo "Skipping build of 386 binaries to shorten CI for Pull Requests"
 		flags += "-e BUILD_ARCH=amd64"
 	}
 
-	tmp_dir = mktmp()
-	dist_dir = "-e DIST_DIR=/upload -v ${tmp_dir}:/upload"
+	def tmp_dir = mktmp()
+	def dist_dir = "-e DIST_DIR=/upload -v ${tmp_dir}:/upload"
 
 	def pattern = "github\\.com\\/deis\\/controller-sdk-go\\n\\s+version:\\s+[a-f0-9]+"
-	replacement = "github\\.com\\/deis\\/controller-sdk-go\\n"
-	replacement += "  repo: https:\\/\\/github\\.com\\/${env.CHANGE_AUTHOR}\\/controller-sdk-go\\.git\\n"
+	def replacement = "github\\.com\\/deis\\/controller-sdk-go\\n"
+	replacement += "  repo: https:\\/\\/github\\.com\\/${author}\\/controller-sdk-go\\.git\\n"
 	replacement += "  vcs: git\\n"
 	replacement += "  version: ${git_commit}"
 
-	build_script = "sh -c 'perl -i -0pe \"s/${pattern}/${replacement}/\" glide.yaml "
+	def build_script = "sh -c 'perl -i -0pe \"s/${pattern}/${replacement}/\" glide.yaml "
 	build_script += "&& rm -rf glide.lock vendor/github.com/deis/controller-sdk-go "
 	build_script += "&& glide install "
 	build_script += "&& make build-revision'"
-	sh "docker run ${flags} -e REVISION=${git_commit.take(7)} ${dist_dir} --rm ${wcli_image} ${build_script}"
+	sh "docker run ${flags} -e GIT_TAG=csdk -e REVISION=${git_commit.take(7)} ${dist_dir} --rm ${wcli_image} ${build_script}"
 
 	upload_artifacts(dist_dir)
 	sh "rm -rf ${tmp_dir}"
