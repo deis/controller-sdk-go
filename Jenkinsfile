@@ -139,8 +139,9 @@ node('linux') {
 
 	def build_script = "sh -c 'perl -i -0pe \"s/${pattern}/${replacement}/\" glide.yaml "
 	build_script += "&& rm -rf glide.lock vendor/github.com/deis/controller-sdk-go "
-	build_script += "&& glide install "
+	build_script += "&& glide install --update-vendored "
 	build_script += "&& make build-revision'"
+	sh "docker pull ${wcli_image}"
 	sh "docker run ${flags} -e GIT_TAG=csdk -e REVISION=${git_commit.take(7)} ${dist_dir} --rm ${wcli_image} ${build_script}"
 
 	upload_artifacts(dist_dir)
