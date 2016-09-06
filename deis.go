@@ -97,7 +97,7 @@ type Client struct {
 // controller is unsafe.
 //
 // If the SDK detects an API version mismatch, it will return ErrAPIMismatch.
-const APIVersion = "2.2"
+const APIVersion = "2.3"
 
 var (
 	// ErrAPIMismatch occurs when the sdk is using a different api version than the deis.

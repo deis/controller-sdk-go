@@ -107,7 +107,7 @@ func Logs(c *deis.Client, appID string, lines int) (string, error) {
 	}
 
 	// We need to trim a few characters off the front and end of the string
-	return string(body[2 : len(body)-1]), reqErr
+	return string(body), reqErr
 }
 
 // Run a one-time command in your app. This will start a kubernetes job with the

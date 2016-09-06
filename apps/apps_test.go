@@ -97,14 +97,14 @@ func (f *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	// The entire log message is prefixed and suffixed with a few characters (not entirely sure why)
 	// We mimic those here
 	if req.URL.Path == "/v2/apps/example-go/logs" && req.URL.RawQuery == "" && req.Method == "GET" {
-		res.Write([]byte("b'\"test foo bar\"'"))
+		res.Write([]byte(`test\nfoo\nbar`))
 		return
 	}
 
 	// The entire log message is prefixed and suffixed with a few characters (not entirely sure why)
 	// We mimic those here
 	if req.URL.Path == "/v2/apps/example-go/logs" && req.URL.RawQuery == "log_lines=1" && req.Method == "GET" {
-		res.Write([]byte("b'\"test\"'"))
+		res.Write([]byte("test"))
 		return
 	}
 
@@ -307,11 +307,11 @@ func TestAppsLogs(t *testing.T) {
 	tests := []testExpected{
 		{
 			Input:    -1,
-			Expected: "\"test foo bar\"",
+			Expected: `test\nfoo\nbar`,
 		},
 		{
 			Input:    1,
-			Expected: "\"test\"",
+			Expected: "test",
 		},
 	}
 
