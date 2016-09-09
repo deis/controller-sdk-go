@@ -84,11 +84,18 @@ var (
 	ErrTagNotFound = errors.New(invalidTagMsg)
 	// ErrDuplicateApp is returned when create an app with an ID that already exists
 	ErrDuplicateApp = errors.New(duplicateIDMsg)
-	// ErrUnprocessable is returned when the controller throws a 422.
-	ErrUnprocessable = errors.New("Unable to process your request.")
 	// ErrCancellationFailed is returned when cancelling a user fails.
 	ErrCancellationFailed = errors.New("Failed to delete user because the user still has applications assigned. Delete or transfer ownership.")
 )
+
+// ErrUnprocessable is returned when the controller throws a 422.
+type ErrUnprocessable struct {
+	errorMsg string
+}
+
+func (e ErrUnprocessable) Error() string {
+	return fmt.Sprintf("Unable to process your request: %s", e.errorMsg)
+}
 
 // checkForErrors tries to match up an API error with an predefined error in the SDK.
 func checkForErrors(res *http.Response) error {
@@ -205,7 +212,14 @@ func checkForErrors(res *http.Response) error {
 		}
 		return unknownServerError(res.StatusCode, string(out))
 	case 422:
-		return ErrUnprocessable
+		bodyMap := make(map[string]interface{})
+		if err := json.Unmarshal(out, &bodyMap); err != nil {
+			return unknownServerError(res.StatusCode, fmt.Sprintf(jsonParsingError, err, string(out)))
+		}
+		if v, ok := bodyMap["detail"].(string); ok {
+			return ErrUnprocessable{v}
+		}
+		return unknownServerError(res.StatusCode, string(out))
 	case 500:
 		return ErrServerError
 	default:

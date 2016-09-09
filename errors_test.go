@@ -260,9 +260,9 @@ func TestErrors(t *testing.T) {
 		{
 			res: &http.Response{
 				StatusCode: 422,
-				Body:       readCloser(""),
+				Body:       readCloser(`{"detail":"test does not exist under values"}`),
 			},
-			expected: ErrUnprocessable,
+			expected: ErrUnprocessable{"test does not exist under values"},
 		},
 		{
 			res: &http.Response{
