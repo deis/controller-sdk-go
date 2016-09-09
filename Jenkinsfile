@@ -78,7 +78,16 @@ parallel(
 			withCredentials([[$class: 'StringBinding',
 												credentialsId: '2da033eb-2e34-4efd-b090-ad892f348065',
 												variable: 'CODECOV_TOKEN']]) {
-				sh "docker run -e CODECOV_TOKEN=\${CODECOV_TOKEN} --rm ${test_image} sh -c 'test-cover.sh && curl -s https://codecov.io/bash | bash'"
+				def codecov = "codecov -Z -C ${git_commit} "
+				if (git_branch == "remotes/origin/master") {
+					codecov += "-B master"
+				} else {
+					def branch_name = env.BRANCH_NAME
+					def branch_index = branch_name.indexOf('-')
+					def pr = branch_name.substring(branch_index+1, branch_name.length())
+					codecov += "-P ${pr}"
+				}
+				sh "docker run -e CODECOV_TOKEN=\${CODECOV_TOKEN} --rm ${test_image} sh -c 'test-cover.sh &&  ${codecov}'"
 			}
 		}
 	}
