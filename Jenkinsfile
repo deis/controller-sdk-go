@@ -130,7 +130,7 @@ def mktmp = {
 node('linux') {
 	def author = "deis"
 	def flags = ""
-	
+
 	if (git_branch != "remotes/origin/master") {
 		author = env.CHANGE_AUTHOR
 		echo "Skipping build of 386 binaries to shorten CI for Pull Requests"
@@ -162,8 +162,10 @@ stage 'Trigger e2e tests'
 waitUntil {
 	try {
 		def downstreamJob = git_branch == "remotes/origin/master" ? '/workflow-test' : '/workflow-test-pr'
-		build job: downstreamJob, parameters: [[$class: 'StringParameterValue', name: 'WORKFLOW_CLI_SHA', value: git_commit],
-			[$class: 'StringParameterValue', name: 'COMPONENT_REPO', value: 'controller-sdk-go']]
+		build job: downstreamJob, parameters: [
+			[$class: 'StringParameterValue', name: 'WORKFLOW_CLI_SHA', value: git_commit],
+			[$class: 'StringParameterValue', name: 'COMPONENT_REPO', value: 'controller-sdk-go'],
+			[$class: 'StringParameterValue', name: 'UPSTREAM_SLACK_CHANNEL', value: '#controller']]
 		true
 	} catch(error) {
 		if (git_branch == "remotes/origin/master") {
