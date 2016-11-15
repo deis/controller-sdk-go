@@ -1,4 +1,4 @@
-FROM quay.io/deis/go-dev:0.17.0
+FROM quay.io/deis/go-dev:0.20.0
 # This Dockerfile is used to bundle the source and all dependencies into an image for testing.
 
 ADD https://codecov.io/bash /usr/local/bin/codecov
