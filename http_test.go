@@ -236,7 +236,19 @@ func TestHealthcheck(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	deis, err := New(false, server.URL, "")
+	// Test with a trailing slash
+	deis, err := New(false, server.URL+"/", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	deis.UserAgent = "test"
+
+	if err = deis.Healthcheck(); err != nil {
+		t.Error(err)
+	}
+
+	// Test without a trailing slash
+	deis, err = New(false, server.URL, "")
 	if err != nil {
 		t.Fatal(err)
 	}

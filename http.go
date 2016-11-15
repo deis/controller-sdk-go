@@ -139,7 +139,12 @@ your deis version is correct.`
 // Healthcheck can be called to see if the controller is healthy
 func (c *Client) Healthcheck() error {
 	// Make a request to /healthz and expect an ok HTTP response
-	req, err := http.NewRequest("GET", c.ControllerURL.String()+"/healthz", bytes.NewBuffer(nil))
+	controllerURL := c.ControllerURL.String()
+	// Don't double the last slash in the URL path
+	if !strings.HasSuffix(controllerURL, "/") {
+		controllerURL = controllerURL + "/"
+	}
+	req, err := http.NewRequest("GET", controllerURL+"healthz", bytes.NewBuffer(nil))
 	addUserAgent(&req.Header, c.UserAgent)
 
 	if err != nil {
