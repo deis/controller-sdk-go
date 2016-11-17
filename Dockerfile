@@ -9,7 +9,7 @@ COPY glide.lock /go/src/github.com/deis/controller-sdk-go/
 
 WORKDIR /go/src/github.com/deis/controller-sdk-go
 
-RUN glide install --strip-vcs --strip-vendor
+RUN glide install --strip-vendor
 
 COPY ./_scripts /usr/local/bin
 
