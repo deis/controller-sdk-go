@@ -30,3 +30,17 @@ CPU: 40%`)
 		t.Errorf("Expected:\n\n%s\n\nGot:\n\n%s", expected2, a2.String())
 	}
 }
+
+func TestLabelsString(t *testing.T) {
+	data := Labels{
+		"git_repo": "https://github.com/deis/controller-sdk-go",
+		"team":     "deis",
+	}
+
+	expected := strings.TrimSpace(`git_repo:        https://github.com/deis/controller-sdk-go
+team:            deis`)
+
+	if strings.TrimSpace(data.String()) != expected {
+		t.Errorf("Expected:\n\n%s\n\nGot:\n\n%s", expected, data.String())
+	}
+}

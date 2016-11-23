@@ -20,6 +20,7 @@ const appSettingsFixture string = `
     "routable": true,
     "whitelist": ["1.2.3.4", "0.0.0.0/0"],
     "autoscale": {"cmd": {"min": 3, "max": 8, "cpu_percent": 40}},
+    "label": {"git_repo": "https://github.com/deis/controller-sdk-go", "team" : "deis"},
     "created": "2014-01-01T00:00:00UTC",
     "updated": "2014-01-01T00:00:00UTC",
     "uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75"
@@ -34,14 +35,15 @@ const appSettingsUnsetFixture string = `
     "routable": true,
     "whitelist": ["1.2.3.4", "0.0.0.0/0"],
     "autoscale": {"cmd": {"min": 3, "max": 8, "cpu_percent": 40}},
+    "label": {"git_repo": "https://github.com/deis/controller-sdk-go", "team" : "deis"},
     "created": "2014-01-01T00:00:00UTC",
     "updated": "2014-01-01T00:00:00UTC",
     "uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75"
 }
 `
 
-const appSettingsSetExpected string = `{"maintenance":true,"routable":true,"whitelist":["1.2.3.4","0.0.0.0/0"],"autoscale":{"cmd":{"min":3,"max":8,"cpu_percent":40}}}`
-const appSettingsUnsetExpected string = `{"maintenance":true,"routable":true,"whitelist":["1.2.3.4","0.0.0.0/0"],"autoscale":{"cmd":{"min":3,"max":8,"cpu_percent":40}}}`
+const appSettingsSetExpected string = `{"maintenance":true,"routable":true,"whitelist":["1.2.3.4","0.0.0.0/0"],"autoscale":{"cmd":{"min":3,"max":8,"cpu_percent":40}},"label":{"git_repo":"https://github.com/deis/controller-sdk-go","team":"deis"}}`
+const appSettingsUnsetExpected string = `{"maintenance":true,"routable":true,"whitelist":["1.2.3.4","0.0.0.0/0"],"autoscale":{"cmd":{"min":3,"max":8,"cpu_percent":40}},"label":{"git_repo":"https://github.com/deis/controller-sdk-go","team":"deis"}}`
 
 var trueVar = true
 
@@ -138,6 +140,10 @@ func TestAppSettingsSet(t *testing.T) {
 				CPUPercent: 40,
 			},
 		},
+		Label: map[string]interface{}{
+			"git_repo": "https://github.com/deis/controller-sdk-go",
+			"team":     "deis",
+		},
 		Created: "2014-01-01T00:00:00UTC",
 		Updated: "2014-01-01T00:00:00UTC",
 		UUID:    "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
@@ -153,6 +159,10 @@ func TestAppSettingsSet(t *testing.T) {
 				Max:        8,
 				CPUPercent: 40,
 			},
+		},
+		Label: map[string]interface{}{
+			"git_repo": "https://github.com/deis/controller-sdk-go",
+			"team":     "deis",
 		},
 	}
 
@@ -192,6 +202,10 @@ func TestAppSettingsUnset(t *testing.T) {
 				CPUPercent: 40,
 			},
 		},
+		Label: map[string]interface{}{
+			"git_repo": "https://github.com/deis/controller-sdk-go",
+			"team":     "deis",
+		},
 		Created: "2014-01-01T00:00:00UTC",
 		Updated: "2014-01-01T00:00:00UTC",
 		UUID:    "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
@@ -207,6 +221,10 @@ func TestAppSettingsUnset(t *testing.T) {
 				Max:        8,
 				CPUPercent: 40,
 			},
+		},
+		Label: map[string]interface{}{
+			"git_repo": "https://github.com/deis/controller-sdk-go",
+			"team":     "deis",
 		},
 	}
 
@@ -245,6 +263,10 @@ func TestAppSettingsList(t *testing.T) {
 				Max:        8,
 				CPUPercent: 40,
 			},
+		},
+		Label: map[string]interface{}{
+			"git_repo": "https://github.com/deis/controller-sdk-go",
+			"team":     "deis",
 		},
 		Created: "2014-01-01T00:00:00UTC",
 		Updated: "2014-01-01T00:00:00UTC",

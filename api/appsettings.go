@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"fmt"
 	"text/template"
 )
 
@@ -24,6 +25,7 @@ type AppSettings struct {
 	Routable  *bool                 `json:"routable,omitempty"`
 	Whitelist []string              `json:"whitelist,omitempty"`
 	Autoscale map[string]*Autoscale `json:"autoscale,omitempty"`
+	Label     Labels                `json:"label,omitempty"`
 }
 
 // NewRoutable returns a default value for the AppSettings.Routable field.
@@ -60,4 +62,18 @@ type Autoscale struct {
 	Min        int `json:"min"`
 	Max        int `json:"max"`
 	CPUPercent int `json:"cpu_percent"`
+}
+
+// Labels can contain any user-defined key value
+type Labels map[string]interface{}
+
+func (l Labels) String() string {
+	var buffer bytes.Buffer
+	for k, v := range l {
+		if buffer.Len() > 0 {
+			buffer.WriteString("\n")
+		}
+		buffer.WriteString(fmt.Sprintf("%-16s %s", k+":", v))
+	}
+	return buffer.String()
 }
