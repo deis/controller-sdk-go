@@ -2,7 +2,6 @@ package api
 
 import (
 	"bytes"
-	"fmt"
 	"text/template"
 )
 
@@ -66,14 +65,3 @@ type Autoscale struct {
 
 // Labels can contain any user-defined key value
 type Labels map[string]interface{}
-
-func (l Labels) String() string {
-	var buffer bytes.Buffer
-	for k, v := range l {
-		if buffer.Len() > 0 {
-			buffer.WriteString("\n")
-		}
-		buffer.WriteString(fmt.Sprintf("%-16s %s", k+":", v))
-	}
-	return buffer.String()
-}
