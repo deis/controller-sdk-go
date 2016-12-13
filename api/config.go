@@ -93,12 +93,12 @@ TCP Socket Probe: {{or .TCPSocket "N/A"}}`)
 // KVPair is a key/value pair used to parse values from
 // strings into a formal structure.
 type KVPair struct {
-	Key   string `json:"key"`
+	Name  string `json:"name"`
 	Value string `json:"value"`
 }
 
 func (k KVPair) String() string {
-	return k.Key + "=" + k.Value
+	return k.Name + "=" + k.Value
 }
 
 // ExecProbe executes a command within a Pod.
