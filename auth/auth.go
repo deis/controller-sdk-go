@@ -9,7 +9,7 @@ import (
 )
 
 // Register a new user with the controller.
-// If controller registration is set to administratiors only, a valid administrative
+// If controller registration is set to administrators only, a valid administrative
 // user token is required in the client.
 func Register(c *deis.Client, username, password, email string) error {
 	user := api.AuthRegisterRequest{Username: username, Password: password, Email: email}

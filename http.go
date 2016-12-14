@@ -109,7 +109,7 @@ func (c *Client) CheckConnection() error {
 Make sure that the Controller URI is correct, the server is running and
 your deis version is correct.`
 
-	// Make a request to /v2/ and expect a 401 respone
+	// Make a request to /v2/ and expect a 401 response
 	req, err := http.NewRequest("GET", c.ControllerURL.String()+"/v2/", bytes.NewBuffer(nil))
 	addUserAgent(&req.Header, c.UserAgent)
 
