@@ -241,7 +241,14 @@ func TestErrors(t *testing.T) {
 				StatusCode: 404,
 				Body:       readCloser(""),
 			},
-			expected: ErrNotFound,
+			expected: ErrNotFound{"Not Found"},
+		},
+		{
+			res: &http.Response{
+				StatusCode: 404,
+				Body:       readCloser("App not found"),
+			},
+			expected: ErrNotFound{"App not found"},
 		},
 		{
 			res: &http.Response{
