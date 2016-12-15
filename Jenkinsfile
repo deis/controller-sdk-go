@@ -30,10 +30,10 @@ stage 'Go & Git Info'
 node('linux') {
 	checkout scm
 
-	git_branch = sh(returnStdout: true, script: 'git describe --all').trim()
+	git_branch = env.BRANCH_NAME
 	git_commit = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
 
-	if (git_branch != "remotes/origin/master") {
+	if (git_branch != "master") {
 		// Determine actual PR commit, if necessary
 		merge_commit_parents= sh(returnStdout: true, script: 'git rev-parse HEAD | git log --pretty=%P -n 1 --date-order').trim()
 		if (merge_commit_parents.length() > 40) {
@@ -77,7 +77,7 @@ node('linux') {
 										credentialsId: '2da033eb-2e34-4efd-b090-ad892f348065',
 										variable: 'CODECOV_TOKEN']]) {
 		def codecov = "codecov -Z -C ${git_commit} "
-		if (git_branch == "remotes/origin/master") {
+		if (git_branch == "master") {
 			codecov += "-B master"
 		} else {
 			def branch_name = env.BRANCH_NAME
@@ -128,7 +128,7 @@ node('linux') {
 	def author = "deis"
 	def flags = ""
 
-	if (git_branch != "remotes/origin/master") {
+	if (git_branch != "master") {
 		author = env.CHANGE_AUTHOR
 		echo "Skipping build of 386 binaries to shorten CI for Pull Requests"
 		flags += "-e BUILD_ARCH=amd64"
@@ -158,7 +158,7 @@ stage 'Trigger e2e tests'
 
 waitUntil {
 	try {
-		def chartRepoType = git_branch == "remotes/origin/master" ? 'dev' : 'pr'
+		def chartRepoType = git_branch == "master" ? 'dev' : 'pr'
 		build job: 'workflow-chart-e2e', parameters: [
 			[$class: 'StringParameterValue', name: 'WORKFLOW_CLI_SHA', value: git_commit],
 			[$class: 'StringParameterValue', name: 'ACTUAL_COMMIT', value: git_commit],
@@ -167,7 +167,7 @@ waitUntil {
 			[$class: 'StringParameterValue', name: 'UPSTREAM_SLACK_CHANNEL', value: '#controller']]
 		true
 	} catch(error) {
-		if (git_branch == "remotes/origin/master") {
+		if (git_branch == "master") {
 			throw error
 		}
 
