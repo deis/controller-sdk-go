@@ -61,7 +61,7 @@ var (
 	// ErrDuplicateKey is returned when adding a key that already exists.
 	ErrDuplicateKey = errors.New(duplicateKeyMsg)
 	// ErrInvalidName is returned when a name is invalid or missing.
-	ErrInvalidName = errors.New(invalidNameMsg)
+	ErrInvalidName = errors.New(fmt.Sprintf("Name %s", strings.ToLower(invalidNameMsg)))
 	// ErrInvalidCertificate is returned when a certififate is missing or invalid
 	ErrInvalidCertificate = errors.New(invalidCertMsg)
 	// ErrPodNotFound is returned when a pod type is not Found
