@@ -35,8 +35,6 @@ const (
 )
 
 var (
-	// ErrNotFound is returned when the server returns a 404.
-	ErrNotFound = errors.New("Not Found")
 	// ErrServerError is returned when the server returns a 500.
 	ErrServerError = errors.New("Internal Server Error")
 	// ErrMethodNotAllowed is thrown when using a unsupposrted method.
@@ -93,8 +91,17 @@ type ErrUnprocessable struct {
 	errorMsg string
 }
 
+// ErrNotFound is returned when the controller throws a 404.
+type ErrNotFound struct {
+	errorMsg string
+}
+
 func (e ErrUnprocessable) Error() string {
 	return fmt.Sprintf("Unable to process your request: %s", e.errorMsg)
+}
+
+func (e ErrNotFound) Error() string {
+	return e.errorMsg
 }
 
 // checkForErrors tries to match up an API error with an predefined error in the SDK.
@@ -197,7 +204,10 @@ func checkForErrors(res *http.Response) error {
 	case 403:
 		return ErrForbidden
 	case 404:
-		return ErrNotFound
+		if string(out) != "" {
+			return ErrNotFound{string(out)}
+		}
+		return ErrNotFound{"Not Found"}
 	case 405:
 		return ErrMethodNotAllowed
 	case 409:
